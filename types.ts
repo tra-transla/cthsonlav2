@@ -21,6 +21,7 @@ export interface Endpoint {
   location: string;
   status: EndpointStatus;
   lastConnected: string;
+  updatedAt?: string;
 }
 
 export interface Unit {
@@ -28,6 +29,7 @@ export interface Unit {
   name: string;
   code: string;
   description?: string;
+  updatedAt?: string;
 }
 
 export interface Staff {
@@ -37,21 +39,23 @@ export interface Staff {
   position: string;
   email?: string;
   phone?: string;
+  updatedAt?: string;
 }
 
 export interface ParticipantGroup {
   id: string;
   name: string;
   description?: string;
+  updatedAt?: string;
 }
 
 export interface Meeting {
   id: string;
   title: string;
   hostUnit: string;
-  hostUnitId?: string; // Thêm trường ID đơn vị
+  hostUnitId?: string;
   chairPerson: string;
-  chairPersonId?: string; // Thêm trường ID cán bộ
+  chairPersonId?: string;
   startTime: string;
   endTime: string;
   participants: string[];
@@ -62,6 +66,7 @@ export interface Meeting {
   status?: 'SCHEDULED' | 'CANCELLED' | 'POSTPONED';
   cancelReason?: string;
   invitationLink?: string;
+  updatedAt?: string;
 }
 
 export interface StatData {

@@ -104,6 +104,31 @@ const App: React.FC = () => {
   }, [meetings, notifiedMeetingIds, systemSettings.logoBase64]);
 
   useEffect(() => {
+    const mergeData = <T extends { id: string, updatedAt?: string }>(cloudData: T[], localData: T[]): T[] => {
+      const mergedMap = new Map<string, T>();
+      
+      // Add local data first
+      localData.forEach(item => mergedMap.set(item.id, item));
+      
+      // Merge cloud data
+      cloudData.forEach(cloudItem => {
+        const localItem = mergedMap.get(cloudItem.id);
+        if (!localItem) {
+          mergedMap.set(cloudItem.id, cloudItem);
+        } else {
+          // If both exist, use the one with the newer updatedAt timestamp
+          const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
+          const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
+          
+          if (cloudDate >= localDate) {
+            mergedMap.set(cloudItem.id, cloudItem);
+          }
+        }
+      });
+      
+      return Array.from(mergedMap.values());
+    };
+
     const syncData = async () => {
       if (!supabaseService.isConfigured()) {
         console.log("Supabase not configured, using local storage only.");
@@ -123,68 +148,44 @@ const App: React.FC = () => {
           supabaseService.getSettings()
         ]);
 
-        // Merge logic: Combine cloud data with local-only data to prevent loss
-        if (cloudMeetings.length > 0) {
-          setMeetings(prev => {
-            const cloudIds = new Set(cloudMeetings.map(m => m.id));
-            const localOnly = prev.filter(m => !cloudIds.has(m.id));
-            const merged = [...cloudMeetings, ...localOnly].sort((a, b) => 
-              new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-            );
-            storageService.saveMeetings(merged);
-            return merged;
-          });
-        }
+        // Efficiently merge all data types
+        setMeetings(prev => {
+          const merged = mergeData(cloudMeetings, prev).sort((a, b) => 
+            new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+          );
+          storageService.saveMeetings(merged);
+          return merged;
+        });
         
-        if (cloudEndpoints.length > 0) {
-          setEndpoints(prev => {
-            const cloudIds = new Set(cloudEndpoints.map(e => e.id));
-            const localOnly = prev.filter(e => !cloudIds.has(e.id));
-            const merged = [...cloudEndpoints, ...localOnly];
-            storageService.saveEndpoints(merged);
-            return merged;
-          });
-        }
+        setEndpoints(prev => {
+          const merged = mergeData(cloudEndpoints, prev);
+          storageService.saveEndpoints(merged);
+          return merged;
+        });
 
-        if (cloudUnits.length > 0) {
-          setUnits(prev => {
-            const cloudIds = new Set(cloudUnits.map(u => u.id));
-            const localOnly = prev.filter(u => !cloudIds.has(u.id));
-            const merged = [...cloudUnits, ...localOnly];
-            storageService.saveUnits(merged);
-            return merged;
-          });
-        }
+        setUnits(prev => {
+          const merged = mergeData(cloudUnits, prev);
+          storageService.saveUnits(merged);
+          return merged;
+        });
 
-        if (cloudStaff.length > 0) {
-          setStaff(prev => {
-            const cloudIds = new Set(cloudStaff.map(s => s.id));
-            const localOnly = prev.filter(s => !cloudIds.has(s.id));
-            const merged = [...cloudStaff, ...localOnly];
-            storageService.saveStaff(merged);
-            return merged;
-          });
-        }
+        setStaff(prev => {
+          const merged = mergeData(cloudStaff, prev);
+          storageService.saveStaff(merged);
+          return merged;
+        });
 
-        if (cloudGroups.length > 0) {
-          setGroups(prev => {
-            const cloudIds = new Set(cloudGroups.map(g => g.id));
-            const localOnly = prev.filter(g => !cloudIds.has(g.id));
-            const merged = [...cloudGroups, ...localOnly];
-            storageService.saveGroups(merged);
-            return merged;
-          });
-        }
+        setGroups(prev => {
+          const merged = mergeData(cloudGroups, prev);
+          storageService.saveGroups(merged);
+          return merged;
+        });
 
-        if (cloudUsers.length > 0) {
-          setUsers(prev => {
-            const cloudIds = new Set(cloudUsers.map(u => u.id));
-            const localOnly = prev.filter(u => !cloudIds.has(u.id));
-            const merged = [...cloudUsers, ...localOnly];
-            storageService.saveUsers(merged);
-            return merged;
-          });
-        }
+        setUsers(prev => {
+          const merged = mergeData(cloudUsers, prev);
+          storageService.saveUsers(merged);
+          return merged;
+        });
         
         if (cloudSettings) {
           setSystemSettings(cloudSettings);
@@ -331,21 +332,23 @@ const App: React.FC = () => {
   };
 
   const handleUpdateMeeting = async (meeting: Meeting) => {
+    const updatedMeeting = { ...meeting, updatedAt: new Date().toISOString() };
+    
     // 1. Update local state and storage first for immediate feedback
     setMeetings(prev => {
-      const updated = prev.map(m => m.id === meeting.id ? meeting : m);
+      const updated = prev.map(m => m.id === updatedMeeting.id ? updatedMeeting : m);
       storageService.saveMeetings(updated);
       return updated;
     });
 
-    if (selectedMeeting && selectedMeeting.id === meeting.id) {
-        setSelectedMeeting(meeting);
+    if (selectedMeeting && selectedMeeting.id === updatedMeeting.id) {
+        setSelectedMeeting(updatedMeeting);
     }
     
     // 2. Then sync to cloud
     if (supabaseService.isConfigured()) {
       try { 
-        await supabaseService.upsertMeeting(meeting); 
+        await supabaseService.upsertMeeting(updatedMeeting); 
         setLastRefreshed(new Date());
       } catch (err) { 
         console.error("Cập nhật Cloud thất bại:", err); 
@@ -737,7 +740,12 @@ const App: React.FC = () => {
 
       {selectedMeeting && <MeetingDetailModal meeting={selectedMeeting} onClose={() => setSelectedMeeting(null)} onUpdate={handleUpdateMeeting} />}
       {isCreateModalOpen && <CreateMeetingModal isOpen={isCreateModalOpen} onClose={() => { setIsCreateModalOpen(false); setEditingMeeting(null); }} onCreate={async (m) => {
-        const newMeeting: Meeting = { ...m, id: m.id || `MEET-${Date.now()}`, status: 'SCHEDULED' };
+        const newMeeting: Meeting = { 
+          ...m, 
+          id: m.id || `MEET-${Date.now()}`, 
+          status: 'SCHEDULED',
+          updatedAt: new Date().toISOString()
+        };
         
         // 1. Save locally first
         setMeetings(prev => {

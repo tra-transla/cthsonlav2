@@ -39,7 +39,8 @@ const mapMeeting = (m: any): Meeting => ({
   endpointChecks: m.endpoint_checks || m.endpointChecks || {},
   status: m.status || 'SCHEDULED',
   cancelReason: m.cancel_reason || m.cancelReason || '',
-  invitationLink: m.invitation_link || m.invitationLink || ''
+  invitationLink: m.invitation_link || m.invitationLink || '',
+  updatedAt: m.updated_at || m.updatedAt || null
 });
 
 const unmapMeeting = (m: Meeting) => ({
@@ -58,7 +59,8 @@ const unmapMeeting = (m: Meeting) => ({
   endpoint_checks: m.endpointChecks || {},
   status: m.status || 'SCHEDULED',
   cancel_reason: m.cancelReason || null,
-  invitation_link: m.invitationLink || null
+  invitation_link: m.invitationLink || null,
+  updated_at: new Date().toISOString()
 });
 
 const mapEndpoint = (e: any): Endpoint => ({
@@ -66,7 +68,8 @@ const mapEndpoint = (e: any): Endpoint => ({
   name: e.name || 'N/A',
   location: e.location || 'N/A',
   status: (e.status as EndpointStatus) || EndpointStatus.DISCONNECTED,
-  lastConnected: e.last_connected || e.lastConnected || 'N/A'
+  lastConnected: e.last_connected || e.lastConnected || 'N/A',
+  updatedAt: e.updated_at || e.updatedAt || null
 });
 
 const mapStaff = (s: any): Staff => ({
@@ -75,7 +78,8 @@ const mapStaff = (s: any): Staff => ({
   unitId: s.unit_id || s.unitId || '',
   position: s.position || 'Cán bộ',
   email: s.email || '',
-  phone: s.phone || ''
+  phone: s.phone || '',
+  updatedAt: s.updated_at || s.updatedAt || null
 });
 
 const unmapStaff = (s: Staff) => ({
@@ -84,14 +88,24 @@ const unmapStaff = (s: Staff) => ({
   unit_id: s.unitId,
   position: s.position,
   email: s.email,
-  phone: s.phone
+  phone: s.phone,
+  updated_at: new Date().toISOString()
 });
 
 const mapUnit = (u: any): Unit => ({
   id: u.id,
   name: u.name || 'N/A',
   code: u.code || 'N/A',
-  description: u.description || ''
+  description: u.description || '',
+  updatedAt: u.updated_at || u.updatedAt || null
+});
+
+const unmapUnit = (u: Unit) => ({
+  id: u.id,
+  name: u.name,
+  code: u.code,
+  description: u.description,
+  updated_at: new Date().toISOString()
 });
 
 const mapUser = (u: any): User => ({
@@ -169,8 +183,8 @@ export const supabaseService = {
       name: e.name,
       location: e.location,
       status: e.status,
-      // Fix: Use e.lastConnected instead of e.last_connected to match Endpoint type
-      last_connected: e.lastConnected
+      last_connected: e.lastConnected,
+      updated_at: new Date().toISOString()
     });
     if (error) throw error;
   },
@@ -190,7 +204,7 @@ export const supabaseService = {
 
   async upsertUnit(u: Unit) {
     if (!supabase) return;
-    const { error } = await supabase.from('units').upsert(u);
+    const { error } = await supabase.from('units').upsert(unmapUnit(u));
     if (error) throw error;
   },
 
