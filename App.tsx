@@ -126,6 +126,14 @@ const App: React.FC = () => {
     }
     setIsSyncing(true);
     try {
+      // Test connection first
+      const connTest = await supabaseService.testConnection();
+      if (!connTest.success) {
+        console.error("Supabase Connection Error:", connTest.message);
+        throw new Error(connTest.message);
+      }
+      console.log("Supabase Connection Verified:", connTest.message);
+
       const [cloudMeetings, cloudEndpoints, cloudUnits, cloudStaff, cloudGroups, cloudUsers, cloudSettings] = await Promise.all([
         supabaseService.getMeetings(),
         supabaseService.getEndpoints(),

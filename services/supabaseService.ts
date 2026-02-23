@@ -13,6 +13,8 @@ const getEnv = (key: string) => {
 const supabaseUrl = getEnv('SUPABASE_URL');
 const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
 
+console.log("Supabase Service Initializing with URL:", supabaseUrl);
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase credentials missing. Check environment variables (SUPABASE_URL, SUPABASE_ANON_KEY).");
 }
@@ -145,6 +147,18 @@ const unmapSettings = (s: SystemSettings) => ({
 
 export const supabaseService = {
   isConfigured: () => !!supabase,
+
+  async testConnection() {
+    if (!supabase) return { success: false, message: "Supabase client not initialized" };
+    try {
+      const { data, error } = await supabase.from('system_settings').select('id').limit(1);
+      if (error) throw error;
+      return { success: true, message: "Connected to Supabase successfully", data };
+    } catch (err: any) {
+      console.error("Supabase connection test failed:", err);
+      return { success: false, message: err.message || "Unknown error connecting to Supabase" };
+    }
+  },
 
   async getMeetings(): Promise<Meeting[]> {
     if (!supabase) return [];
