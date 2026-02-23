@@ -7,38 +7,23 @@
     <title>Hệ thống Quản lý & Giám sát Họp Trực tuyến</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
       window.process = { 
         env: { 
           NODE_ENV: 'production',
           API_KEY: "",
           SUPABASE_URL: "https://uhaqofhnfetdkciaswof.supabase.co",
-          SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoYXFvZmhuZmV0ZGtjaWFzd29mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzE5MDEsImV4cCI6MjA4NDYwNzkwMX0.6wHHnIM8d9x0Yvd58BsumxTx3lUr_EZjX0PM5MWFHqA"
+          SUPABASE_ANON_KEY: "sb_publishable_JEA1s-x2-E-c2MSf7OyVDg_enF2A82E"
         } 
       };
       window.global = window;
-      
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'ui-sans-serif', 'system-ui'],
-              display: ['Outfit', 'Inter', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-          }
-        }
-      }
     </script>
     <style>
         body { 
           font-family: 'Inter', sans-serif; 
           margin: 0; 
           padding: 0; 
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          text-rendering: optimizeLegibility;
         }
         @media print {
             .no-print { display: none !important; }

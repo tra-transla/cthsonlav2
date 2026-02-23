@@ -127,7 +127,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     }
 
     const meetingData: Meeting = {
-      id: editingMeeting ? editingMeeting.id : `MEET-${Date.now()}`,
+      id: editingMeeting ? editingMeeting.id : `MEET-${Math.floor(1000 + Math.random() * 9000)}`,
       title: formData.title,
       hostUnit: formData.hostUnit,
       hostUnitId: formData.hostUnitId,

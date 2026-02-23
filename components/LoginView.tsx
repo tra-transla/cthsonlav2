@@ -17,7 +17,6 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
   const [error, setError] = useState('');
   const [selectedPublicMeeting, setSelectedPublicMeeting] = useState<Meeting | null>(null);
   const [now, setNow] = useState(new Date());
-  const [showLoginForm, setShowLoginForm] = useState(false);
 
   // Đồng hồ thời gian thực
   useEffect(() => {
@@ -107,7 +106,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
         <div className="absolute inset-0 bg-gradient-to-br from-slate-950/95 via-slate-900/80 to-slate-950/90"></div>
       </div>
 
-      <div className="w-full max-w-7xl px-6 relative z-10 flex flex-col lg:flex-row items-stretch gap-10 py-8 lg:py-12 min-h-[90vh] font-sans">
+      <div className="w-full max-w-7xl px-6 relative z-10 flex flex-col lg:flex-row items-stretch gap-10 py-8 lg:py-12 min-h-[90vh]">
         
         {/* Left Section: Branding, Stats & Meeting List */}
         <div className="flex-1 w-full flex flex-col space-y-6 animate-in fade-in slide-in-from-left duration-1000">
@@ -122,7 +121,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                   )}
                </div>
             </div>
-            <h1 className="flex flex-col items-start text-left space-y-1 font-display">
+            <h1 className="flex flex-col items-start text-left space-y-1">
               <span className="text-2xl lg:text-3xl font-black text-white uppercase tracking-tighter leading-tight">
                 {systemSettings.shortName}
               </span>
@@ -147,7 +146,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                     <span className={s.color}>{s.icon}</span>
                     <span className="text-[8px] font-black text-white uppercase tracking-widest">{s.label}</span>
                   </div>
-                  <span className={`text-2xl font-black font-mono ${s.color}`}>{s.val}</span>
+                  <span className={`text-2xl font-black ${s.color}`}>{s.val}</span>
                </div>
              ))}
           </div>
@@ -178,7 +177,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                       }`}
                     >
                       <div className="flex flex-col items-center justify-center min-w-[85px] border-r border-white/10 pr-4">
-                        <span className={`text-lg font-black font-mono ${isCancelled ? 'text-red-400' : isPostponed ? 'text-amber-400' : 'text-blue-400'}`}>
+                        <span className={`text-lg font-black ${isCancelled ? 'text-red-400' : isPostponed ? 'text-amber-400' : 'text-blue-400'}`}>
                           {formatMeetingTime(m.startTime)}
                         </span>
                         <span className="text-[9px] font-black text-white/30 uppercase mt-1 text-center leading-tight">
@@ -261,101 +260,79 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
             </div>
           </div>
 
-          <div className={`${!showLoginForm ? 'bg-transparent border-none shadow-none' : 'bg-white/10 backdrop-blur-[30px] rounded-[2.5rem] p-8 lg:p-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20'} w-full flex flex-col relative overflow-hidden group transition-all duration-500`}>
-            {!showLoginForm ? (
-              <div className="flex flex-col items-center justify-center py-2">
-                <button 
-                  onClick={() => setShowLoginForm(true)}
-                  className="group relative px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] active:scale-95 flex items-center gap-3 shadow-xl"
-                >
-                  <Lock className="w-3.5 h-3.5" />
-                  Đăng nhập
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </button>
+          <div className="bg-white/10 backdrop-blur-[30px] rounded-[2.5rem] p-8 lg:p-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20 w-full flex flex-col relative overflow-hidden group">
+            <div className="mb-8 text-center">
+               <div className="inline-block px-4 py-1.5 bg-blue-500/10 border border-blue-400/20 rounded-full">
+                <p className="text-[9px] font-black text-blue-400 uppercase tracking-[0.4em]">ĐĂNG NHẬP HỆ THỐNG</p>
+            </div>
+            <div>
+            <p className="text-white/40 text-[9px] font-black tracking-[0.4em] leading-relaxed">
+                <span className="opacity-100">Lưu ý: Chỉ dành cho quản trị hệ thống</span>
+              </p>
               </div>
-            ) : (
-              <>
-                <div className="mb-8 text-center font-display">
-                  <div className="inline-block px-4 py-1.5 bg-blue-500/10 border border-blue-400/20 rounded-full">
-                    <p className="text-[9px] font-black text-blue-400 uppercase tracking-[0.4em]">ĐĂNG NHẬP HỆ THỐNG</p>
-                  </div>
-                  <div className="mt-2 flex items-center justify-center gap-2">
-                    <p className="text-white/40 text-[9px] font-black tracking-[0.4em] leading-relaxed">
-                      Chỉ dành cho quản trị hệ thống
-                    </p>
-                    <button 
-                      onClick={() => setShowLoginForm(false)}
-                      className="text-blue-400 hover:text-blue-300 text-[9px] font-black uppercase tracking-widest underline underline-offset-4"
-                    >
-                      Quay lại
-                    </button>
-                  </div>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {error && (
+                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 animate-shake text-white">
+                  <XCircle className="w-5 h-5 text-red-400 shrink-0" />
+                  <p className="text-[10px] font-black uppercase tracking-widest leading-tight">{error}</p>
                 </div>
-                
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {error && (
-                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 animate-shake text-white">
-                      <XCircle className="w-5 h-5 text-red-400 shrink-0" />
-                      <p className="text-[10px] font-black uppercase tracking-widest leading-tight">{error}</p>
-                    </div>
-                  )}
+              )}
 
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Tên tài khoản</label>
-                    <div className="relative group">
-                      <input 
-                        type="text" 
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white/10 outline-none transition-all text-white font-bold placeholder:text-white/20 text-sm"
-                        placeholder="Tên đăng nhập..."
-                        autoFocus
-                      />
-                      <UserIcon className="w-5 h-5 absolute left-4 top-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Mật khẩu</label>
-                    <div className="relative group">
-                      <input 
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white/10 outline-none transition-all text-white font-bold placeholder:text-white/20 text-sm"
-                        placeholder="••••••••"
-                      />
-                      <Lock className="w-5 h-5 absolute left-4 top-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
-                    </div>
-                  </div>
-
-                  <button 
-                    type="submit"
-                    disabled={isLoading}
-                    className={`w-full py-3.5 rounded-[1.25rem] font-black text-[10px] uppercase tracking-[0.2em] text-white shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-3 mt-4 ${
-                      isLoading ? 'bg-blue-600/50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/30 active:bg-blue-800'
-                    }`}
-                  >
-                    {isLoading ? (
-                      <>
-                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                        Đang xác thực...
-                      </>
-                    ) : (
-                      <>
-                        ĐĂNG NHẬP
-                      </>
-                    )}
-                  </button>
-                </form>
-
-                <div className="mt-10 pt-6 border-t border-white/5 text-center">
-                  <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.4em] leading-relaxed">
-                    <span className="opacity-50">© 2026 • Trần Trà • VIETTEL SƠN LA</span>
-                  </p>
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Tên tài khoản</label>
+                <div className="relative group">
+                  <input 
+                    type="text" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white/10 outline-none transition-all text-white font-bold placeholder:text-white/20 text-sm"
+                    placeholder="Tên đăng nhập..."
+                  />
+                  <UserIcon className="w-5 h-5 absolute left-4 top-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
                 </div>
-              </>
-            )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Mật khẩu</label>
+                <div className="relative group">
+                  <input 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white/10 outline-none transition-all text-white font-bold placeholder:text-white/20 text-sm"
+                    placeholder="••••••••"
+                  />
+                  <Lock className="w-5 h-5 absolute left-4 top-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
+                </div>
+              </div>
+
+              <button 
+                type="submit"
+                disabled={isLoading}
+                className={`w-full py-4 rounded-[1.25rem] font-black text-[11px] uppercase tracking-[0.3em] text-white shadow-2xl transition-all active:scale-[0.97] flex items-center justify-center gap-3 mt-4 ${
+                  isLoading ? 'bg-blue-600/50 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/30 active:bg-blue-800'
+                }`}
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    Đang xác thực...
+                  </>
+                ) : (
+                  <>
+                    ĐĂNG NHẬP
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-10 pt-6 border-t border-white/5 text-center">
+              <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.4em] leading-relaxed">
+                <span className="opacity-50">© 2026 • Trần Trà • VIETTEL SƠN LA</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -374,7 +351,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                   <FileText size={24} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-white tracking-tight line-clamp-1 font-display">{selectedPublicMeeting.title}</h3>
+                  <h3 className="text-lg font-black text-white tracking-tight line-clamp-1">{selectedPublicMeeting.title}</h3>
                   <p className="text-[9px] text-blue-400 font-black uppercase tracking-widest mt-1">Thông tin cuộc họp công khai</p>
                 </div>
               </div>
