@@ -3,11 +3,13 @@ import { createClient } from '@supabase/supabase-js';
 import { Meeting, Unit, Staff, Endpoint, User, SystemSettings, ParticipantGroup, EndpointStatus } from '../types';
 
 const getEnv = (key: string) => {
-  // Try various ways to get env vars in Vite/Browser environments
-  return (window as any).process?.env?.[key] || 
-         (import.meta as any).env?.[`VITE_${key}`] || 
-         (import.meta as any).env?.[key] || 
-         "";
+  // Prioritize Vite's import.meta.env (handles .env and Vercel/Cloud environment variables)
+  const viteKey = `VITE_${key}`;
+  const envValue = (import.meta as any).env?.[viteKey] || (import.meta as any).env?.[key];
+  if (envValue) return envValue;
+
+  // Fallback to window.process.env shim
+  return (window as any).process?.env?.[key] || "";
 };
 
 const supabaseUrl = getEnv('SUPABASE_URL');

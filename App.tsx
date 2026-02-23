@@ -318,8 +318,9 @@ const App: React.FC = () => {
       try { 
         await supabaseService.upsertMeeting(updatedMeeting); 
         setLastRefreshed(new Date());
-      } catch (err) { 
+      } catch (err: any) { 
         console.error("Cập nhật Cloud thất bại:", err); 
+        alert(`Cập nhật lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời trên trình duyệt này.`);
       }
     }
   };
@@ -731,8 +732,9 @@ const App: React.FC = () => {
           try {
             await supabaseService.upsertMeeting(newMeeting);
             setLastRefreshed(new Date());
-          } catch (err) {
+          } catch (err: any) {
             console.error("Lưu Cloud thất bại:", err);
+            alert(`Lưu lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời trên trình duyệt này.`);
           }
         }
         
