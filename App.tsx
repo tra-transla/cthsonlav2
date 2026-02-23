@@ -663,8 +663,20 @@ const App: React.FC = () => {
       {selectedMeeting && <MeetingDetailModal meeting={selectedMeeting} onClose={() => setSelectedMeeting(null)} onUpdate={handleUpdateMeeting} />}
       {isCreateModalOpen && <CreateMeetingModal isOpen={isCreateModalOpen} onClose={() => { setIsCreateModalOpen(false); setEditingMeeting(null); }} onCreate={async (m) => {
         const newMeeting: Meeting = { ...m, id: m.id || `MEET-${Date.now()}`, status: 'SCHEDULED' };
+        
+        // Optimistic update
         setMeetings(prev => [newMeeting, ...prev]);
-        if (supabaseService.isConfigured()) await supabaseService.upsertMeeting(newMeeting);
+        
+        if (supabaseService.isConfigured()) {
+          try {
+            await supabaseService.upsertMeeting(newMeeting);
+          } catch (error) {
+            console.error("Failed to save meeting to Supabase:", error);
+            alert("Lỗi: Không thể lưu cuộc họp vào cơ sở dữ liệu. Vui lòng kiểm tra kết nối hoặc cấu hình.");
+            // Rollback local state if save fails
+            setMeetings(prev => prev.filter(item => item.id !== newMeeting.id));
+          }
+        }
       }} onUpdate={handleUpdateMeeting} units={units} staff={staff} availableEndpoints={endpoints} editingMeeting={editingMeeting} />}
       
       {isChangePasswordOpen && currentUser && (
