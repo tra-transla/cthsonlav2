@@ -120,7 +120,9 @@ const App: React.FC = () => {
   };
 
   const syncData = async () => {
+    console.log("Starting data sync...");
     if (!supabaseService.isConfigured()) {
+      console.log("Supabase not configured, skipping sync.");
       setHasSyncedOnce(true);
       return;
     }
@@ -144,16 +146,26 @@ const App: React.FC = () => {
         supabaseService.getSettings()
       ]);
 
+      console.log("Cloud data fetched:", {
+        meetings: cloudMeetings?.length,
+        endpoints: cloudEndpoints?.length,
+        units: cloudUnits?.length,
+        staff: cloudStaff?.length,
+        groups: cloudGroups?.length,
+        users: cloudUsers?.length,
+        settings: !!cloudSettings
+      });
+
       setMeetings(prev => {
-        const merged = mergeData(cloudMeetings, prev).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+        const merged = mergeData(cloudMeetings || [], prev).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
         storageService.saveMeetings(merged);
         return merged;
       });
-      setEndpoints(prev => { const merged = mergeData(cloudEndpoints, prev); storageService.saveEndpoints(merged); return merged; });
-      setUnits(prev => { const merged = mergeData(cloudUnits, prev); storageService.saveUnits(merged); return merged; });
-      setStaff(prev => { const merged = mergeData(cloudStaff, prev); storageService.saveStaff(merged); return merged; });
-      setGroups(prev => { const merged = mergeData(cloudGroups, prev); storageService.saveGroups(merged); return merged; });
-      setUsers(prev => { const merged = mergeData(cloudUsers, prev); storageService.saveUsers(merged); return merged; });
+      setEndpoints(prev => { const merged = mergeData(cloudEndpoints || [], prev); storageService.saveEndpoints(merged); return merged; });
+      setUnits(prev => { const merged = mergeData(cloudUnits || [], prev); storageService.saveUnits(merged); return merged; });
+      setStaff(prev => { const merged = mergeData(cloudStaff || [], prev); storageService.saveStaff(merged); return merged; });
+      setGroups(prev => { const merged = mergeData(cloudGroups || [], prev); storageService.saveGroups(merged); return merged; });
+      setUsers(prev => { const merged = mergeData(cloudUsers || [], prev); storageService.saveUsers(merged); return merged; });
       
       if (cloudSettings) {
         setSystemSettings(cloudSettings);
@@ -161,11 +173,13 @@ const App: React.FC = () => {
       }
       setLastRefreshed(new Date());
       setHasSyncedOnce(true);
+      console.log("Data sync completed successfully.");
     } catch (err) {
       console.error("Đồng bộ thất bại:", err);
-      alert("Lỗi đồng bộ dữ liệu từ Cloud. Vui lòng kiểm tra kết nối API Supabase.");
+      // alert("Lỗi đồng bộ dữ liệu từ Cloud. Vui lòng kiểm tra kết nối API Supabase.");
     } finally {
       setIsSyncing(false);
+      setHasSyncedOnce(true);
     }
   };
 

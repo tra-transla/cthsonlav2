@@ -11,6 +11,11 @@ interface LoginViewProps {
 }
 
 const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, systemSettings }) => {
+  console.log("LoginView rendering with:", { 
+    usersCount: users?.length, 
+    meetingsCount: meetings?.length, 
+    systemSettings 
+  });
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -28,14 +33,19 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
   }, []);
 
   const upcomingMeetings = useMemo(() => {
+    if (!meetings || !Array.isArray(meetings)) {
+      console.warn("LoginView: meetings is not an array", meetings);
+      return [];
+    }
     const today = new Date();
     return meetings
-      .filter(m => new Date(m.endTime) >= today)
+      .filter(m => m && m.startTime && m.endTime && new Date(m.endTime) >= today)
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
       .slice(0, 12);
   }, [meetings]);
 
   const stats = useMemo(() => {
+    if (!meetings || !Array.isArray(meetings)) return { week: 0, month: 0, year: 0 };
     const today = new Date();
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - (today.getDay() === 0 ? 6 : today.getDay() - 1));
@@ -44,12 +54,12 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const startOfYear = new Date(today.getFullYear(), 0, 1);
 
-    const valid = meetings.filter(m => m.status !== 'CANCELLED');
+    const valid = meetings.filter(m => m && m.status !== 'CANCELLED');
 
     return {
-      week: valid.filter(m => new Date(m.startTime) >= startOfWeek).length,
-      month: valid.filter(m => new Date(m.startTime) >= startOfMonth).length,
-      year: valid.filter(m => new Date(m.startTime) >= startOfYear).length,
+      week: valid.filter(m => m && m.startTime && new Date(m.startTime) >= startOfWeek).length,
+      month: valid.filter(m => m && m.startTime && new Date(m.startTime) >= startOfMonth).length,
+      year: valid.filter(m => m && m.startTime && new Date(m.startTime) >= startOfYear).length,
     };
   }, [meetings]);
 
@@ -115,7 +125,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
             <div className="relative inline-flex mb-4">
                <div className="absolute -inset-4 bg-blue-500/20 rounded-full blur-2xl"></div>
                <div className="relative p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[1.5rem] shadow-2xl flex items-center justify-center w-16 h-16 overflow-hidden">
-                  {systemSettings.logoBase64 ? (
+                  {systemSettings?.logoBase64 ? (
                     <img src={systemSettings.logoBase64} alt="System Logo" className="max-w-full max-h-full object-contain" />
                   ) : (
                     <Video className="w-10 h-10 text-blue-400" strokeWidth={1.5} />
@@ -124,12 +134,12 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
             </div>
             <h1 className="flex flex-col items-start text-left space-y-1 font-display">
               <span className="text-2xl lg:text-3xl font-black text-white uppercase tracking-tighter leading-tight">
-                {systemSettings.shortName}
+                {systemSettings?.shortName || 'HỘI NGHỊ TRỰC TUYẾN'}
               </span>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-0.5 bg-blue-500 rounded-full"></div>
                 <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em]">
-                  {systemSettings.systemName}
+                  {systemSettings?.systemName || 'HỆ THỐNG QUẢN LÝ'}
                 </span>
               </div>
             </h1>

@@ -48,12 +48,22 @@ export const storageService = {
   },
 
   getData<T>(key: string, defaultValue: T): T {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : defaultValue;
+    try {
+      const data = localStorage.getItem(key);
+      if (!data) return defaultValue;
+      return JSON.parse(data) as T;
+    } catch (e) {
+      console.error(`Error reading ${key} from localStorage:`, e);
+      return defaultValue;
+    }
   },
 
   saveData<T>(key: string, data: T): void {
-    localStorage.setItem(key, JSON.stringify(data));
+    try {
+      localStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error(`Error saving ${key} to localStorage:`, e);
+    }
   },
 
   getMeetings(): Meeting[] { return this.getData(DB_KEYS.MEETINGS, MOCK_MEETINGS); },

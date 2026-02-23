@@ -1,9 +1,13 @@
 
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
   // Quan trọng: Không sử dụng define để gán process.env thành {} 
   // vì nó sẽ phá vỡ shim chúng ta đã tạo trong index.html
   build: {
