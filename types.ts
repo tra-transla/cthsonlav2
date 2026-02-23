@@ -13,6 +13,7 @@ export interface User {
   fullName: string;
   role: UserRole;
   password?: string;
+  updatedAt?: string;
 }
 
 export interface Endpoint {
@@ -88,4 +89,5 @@ export interface SystemSettings {
   shortName: string;
   logoBase64?: string;
   primaryColor: string;
+  updatedAt?: string;
 }

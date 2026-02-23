@@ -113,7 +113,8 @@ const mapUser = (u: any): User => ({
   username: u.username,
   fullName: u.full_name || u.fullName || 'N/A',
   role: u.role,
-  password: u.password
+  password: u.password,
+  updatedAt: u.updated_at || u.updatedAt || null
 });
 
 const unmapUser = (u: User) => ({
@@ -129,7 +130,8 @@ const mapSettings = (s: any): SystemSettings => ({
   systemName: s.system_name || s.systemName || '',
   shortName: s.short_name || s.shortName || '',
   logoBase64: s.logo_base_64 || s.logoBase64 || '',
-  primaryColor: s.primary_color || s.primaryColor || '#3B82F6'
+  primaryColor: s.primary_color || s.primaryColor || '#3B82F6',
+  updatedAt: s.updated_at || s.updatedAt || null
 });
 
 const unmapSettings = (s: SystemSettings) => ({
@@ -137,7 +139,8 @@ const unmapSettings = (s: SystemSettings) => ({
   system_name: s.systemName,
   short_name: s.shortName,
   logo_base_64: s.logoBase64,
-  primary_color: s.primaryColor
+  primary_color: s.primaryColor,
+  updated_at: new Date().toISOString()
 });
 
 export const supabaseService = {
@@ -281,8 +284,17 @@ export const supabaseService = {
 
   async upsertGroup(g: ParticipantGroup) {
     if (!supabase) return;
-    const { error } = await supabase.from('participant_groups').upsert(g);
-    if (error) throw error;
+    const payload = { ...g, updated_at: new Date().toISOString() };
+    const { error } = await supabase.from('participant_groups').upsert(payload);
+    if (error) {
+      if (error.message?.includes('column "updated_at" of relation "participant_groups" does not exist')) {
+        const { updated_at, ...fallback } = payload as any;
+        const { error: retryError } = await supabase.from('participant_groups').upsert(fallback);
+        if (retryError) throw retryError;
+        return;
+      }
+      throw error;
+    }
   },
 
   async deleteGroup(id: string) {
@@ -300,8 +312,17 @@ export const supabaseService = {
 
   async upsertUser(u: User) {
     if (!supabase) return;
-    const { error } = await supabase.from('users').upsert(unmapUser(u));
-    if (error) throw error;
+    const payload = unmapUser(u);
+    const { error } = await supabase.from('users').upsert(payload);
+    if (error) {
+      if (error.message?.includes('column "updated_at" of relation "users" does not exist')) {
+        const { updated_at, ...fallback } = payload as any;
+        const { error: retryError } = await supabase.from('users').upsert(fallback);
+        if (retryError) throw retryError;
+        return;
+      }
+      throw error;
+    }
   },
 
   async deleteUser(id: string) {
@@ -319,8 +340,17 @@ export const supabaseService = {
 
   async updateSettings(s: SystemSettings) {
     if (!supabase) return;
-    const { error } = await supabase.from('system_settings').upsert(unmapSettings(s));
-    if (error) throw error;
+    const payload = unmapSettings(s);
+    const { error } = await supabase.from('system_settings').upsert(payload);
+    if (error) {
+      if (error.message?.includes('column "updated_at" of relation "system_settings" does not exist')) {
+        const { updated_at, ...fallback } = payload as any;
+        const { error: retryError } = await supabase.from('system_settings').upsert(fallback);
+        if (retryError) throw retryError;
+        return;
+      }
+      throw error;
+    }
   },
 
   subscribeTable(table: string, callback: (payload: any) => void) {
