@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS public.units (
     name TEXT NOT NULL,
     code TEXT NOT NULL UNIQUE,
     description TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 3. Bảng Danh mục Cán bộ
@@ -27,7 +28,8 @@ CREATE TABLE IF NOT EXISTS public.staff (
     position TEXT,
     email TEXT,
     phone TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 4. Bảng Danh mục Điểm cầu
@@ -37,7 +39,8 @@ CREATE TABLE IF NOT EXISTS public.endpoints (
     location TEXT,
     status TEXT DEFAULT 'DISCONNECTED',
     last_connected TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 5. Bảng Nhóm thành phần tham gia
@@ -45,7 +48,8 @@ CREATE TABLE IF NOT EXISTS public.participant_groups (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
 -- 6. Bảng Quản lý Cuộc họp (Đầy đủ các thông số trạng thái và KPI)
@@ -67,6 +71,7 @@ CREATE TABLE IF NOT EXISTS public.meetings (
     cancel_reason TEXT,
     invitation_link TEXT,
     created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
     CONSTRAINT meetings_status_check CHECK (status IN ('SCHEDULED', 'CANCELLED', 'POSTPONED'))
 );
 
@@ -78,6 +83,7 @@ CREATE TABLE IF NOT EXISTS public.users (
     role TEXT NOT NULL DEFAULT 'VIEWER',
     password TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
     CONSTRAINT users_role_check CHECK (role IN ('ADMIN', 'OPERATOR', 'VIEWER'))
 );
 

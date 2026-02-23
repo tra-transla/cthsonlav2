@@ -103,104 +103,65 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [meetings, notifiedMeetingIds, systemSettings.logoBase64]);
 
-  useEffect(() => {
-    const mergeData = <T extends { id: string, updatedAt?: string }>(cloudData: T[], localData: T[]): T[] => {
-      const mergedMap = new Map<string, T>();
-      
-      // Add local data first
-      localData.forEach(item => mergedMap.set(item.id, item));
-      
-      // Merge cloud data
-      cloudData.forEach(cloudItem => {
-        const localItem = mergedMap.get(cloudItem.id);
-        if (!localItem) {
-          mergedMap.set(cloudItem.id, cloudItem);
-        } else {
-          // If both exist, use the one with the newer updatedAt timestamp
-          const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
-          const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
-          
-          if (cloudDate >= localDate) {
-            mergedMap.set(cloudItem.id, cloudItem);
-          }
-        }
+  const mergeData = <T extends { id: string, updatedAt?: string }>(cloudData: T[], localData: T[]): T[] => {
+    const mergedMap = new Map<string, T>();
+    localData.forEach(item => mergedMap.set(item.id, item));
+    cloudData.forEach(cloudItem => {
+      const localItem = mergedMap.get(cloudItem.id);
+      if (!localItem) {
+        mergedMap.set(cloudItem.id, cloudItem);
+      } else {
+        const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
+        const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
+        if (cloudDate >= localDate) mergedMap.set(cloudItem.id, cloudItem);
+      }
+    });
+    return Array.from(mergedMap.values());
+  };
+
+  const syncData = async () => {
+    if (!supabaseService.isConfigured()) {
+      setHasSyncedOnce(true);
+      return;
+    }
+    setIsSyncing(true);
+    try {
+      const [cloudMeetings, cloudEndpoints, cloudUnits, cloudStaff, cloudGroups, cloudUsers, cloudSettings] = await Promise.all([
+        supabaseService.getMeetings(),
+        supabaseService.getEndpoints(),
+        supabaseService.getUnits(),
+        supabaseService.getStaff(),
+        supabaseService.getGroups(),
+        supabaseService.getUsers(),
+        supabaseService.getSettings()
+      ]);
+
+      setMeetings(prev => {
+        const merged = mergeData(cloudMeetings, prev).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+        storageService.saveMeetings(merged);
+        return merged;
       });
+      setEndpoints(prev => { const merged = mergeData(cloudEndpoints, prev); storageService.saveEndpoints(merged); return merged; });
+      setUnits(prev => { const merged = mergeData(cloudUnits, prev); storageService.saveUnits(merged); return merged; });
+      setStaff(prev => { const merged = mergeData(cloudStaff, prev); storageService.saveStaff(merged); return merged; });
+      setGroups(prev => { const merged = mergeData(cloudGroups, prev); storageService.saveGroups(merged); return merged; });
+      setUsers(prev => { const merged = mergeData(cloudUsers, prev); storageService.saveUsers(merged); return merged; });
       
-      return Array.from(mergedMap.values());
-    };
-
-    const syncData = async () => {
-      if (!supabaseService.isConfigured()) {
-        console.log("Supabase not configured, using local storage only.");
-        setHasSyncedOnce(true);
-        return;
+      if (cloudSettings) {
+        setSystemSettings(cloudSettings);
+        storageService.saveSystemSettings(cloudSettings);
       }
-      
-      setIsSyncing(true);
-      try {
-        const [cloudMeetings, cloudEndpoints, cloudUnits, cloudStaff, cloudGroups, cloudUsers, cloudSettings] = await Promise.all([
-          supabaseService.getMeetings(),
-          supabaseService.getEndpoints(),
-          supabaseService.getUnits(),
-          supabaseService.getStaff(),
-          supabaseService.getGroups(),
-          supabaseService.getUsers(),
-          supabaseService.getSettings()
-        ]);
+      setLastRefreshed(new Date());
+      setHasSyncedOnce(true);
+    } catch (err) {
+      console.error("Đồng bộ thất bại:", err);
+      alert("Lỗi đồng bộ dữ liệu từ Cloud. Vui lòng kiểm tra kết nối API Supabase.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
-        // Efficiently merge all data types
-        setMeetings(prev => {
-          const merged = mergeData(cloudMeetings, prev).sort((a, b) => 
-            new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-          );
-          storageService.saveMeetings(merged);
-          return merged;
-        });
-        
-        setEndpoints(prev => {
-          const merged = mergeData(cloudEndpoints, prev);
-          storageService.saveEndpoints(merged);
-          return merged;
-        });
-
-        setUnits(prev => {
-          const merged = mergeData(cloudUnits, prev);
-          storageService.saveUnits(merged);
-          return merged;
-        });
-
-        setStaff(prev => {
-          const merged = mergeData(cloudStaff, prev);
-          storageService.saveStaff(merged);
-          return merged;
-        });
-
-        setGroups(prev => {
-          const merged = mergeData(cloudGroups, prev);
-          storageService.saveGroups(merged);
-          return merged;
-        });
-
-        setUsers(prev => {
-          const merged = mergeData(cloudUsers, prev);
-          storageService.saveUsers(merged);
-          return merged;
-        });
-        
-        if (cloudSettings) {
-          setSystemSettings(cloudSettings);
-          storageService.saveSystemSettings(cloudSettings);
-        }
-        
-        setLastRefreshed(new Date());
-        setHasSyncedOnce(true);
-      } catch (err) {
-        console.error("Đồng bộ thất bại:", err);
-      } finally {
-        setIsSyncing(false);
-      }
-    };
-
+  useEffect(() => {
     syncData();
 
     const tables = ['meetings', 'endpoints', 'units', 'staff', 'participant_groups', 'users', 'system_settings'];
@@ -242,7 +203,6 @@ const App: React.FC = () => {
               if (table === 'meetings' && selectedMeeting?.id === old.id) setSelectedMeeting(null);
             }
             
-            // Persist real-time changes to local storage
             config.storage(next);
             return next;
           });
@@ -449,7 +409,11 @@ const App: React.FC = () => {
           <button onClick={toggleSidebar} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"><Menu size={24} /></button>
           
           <div className="flex items-center gap-4">
-             <div className={`flex items-center gap-2 px-3 py-1 border rounded-full ${supabaseService.isConfigured() ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-100'}`}>
+             <div 
+               className={`flex items-center gap-2 px-3 py-1 border rounded-full cursor-pointer hover:bg-gray-100 transition-colors ${supabaseService.isConfigured() ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-100'}`}
+               onClick={() => syncData()}
+               title="Nhấn để đồng bộ ngay"
+             >
                 <div className={`w-2 h-2 rounded-full ${
                   !supabaseService.isConfigured() ? 'bg-red-500' :
                   isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'

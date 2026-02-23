@@ -121,7 +121,8 @@ const unmapUser = (u: User) => ({
   username: u.username,
   full_name: u.fullName,
   role: u.role,
-  password: u.password
+  password: u.password,
+  updated_at: new Date().toISOString()
 });
 
 const mapSettings = (s: any): SystemSettings => ({
@@ -155,12 +156,24 @@ export const supabaseService = {
   async upsertMeeting(m: Meeting) {
     if (!supabase) return;
     const payload = unmapMeeting(m);
-    console.log("Upserting meeting to Supabase:", payload);
+    console.log("Attempting to upsert meeting:", payload.id);
+    
     const { error } = await supabase.from('meetings').upsert(payload);
+    
     if (error) {
-      console.error("Supabase error upserting meeting:", error);
+      console.error("Supabase upsert error:", error);
+      
+      // Fallback if updated_at is missing
+      if (error.message?.includes('updated_at') && error.message?.includes('does not exist')) {
+        console.warn("Retrying without updated_at column...");
+        const { updated_at, ...fallbackPayload } = payload as any;
+        const { error: retryError } = await supabase.from('meetings').upsert(fallbackPayload);
+        if (retryError) throw retryError;
+        return;
+      }
       throw error;
     }
+    console.log("Upsert successful:", payload.id);
   },
 
   async deleteMeeting(id: string) {
@@ -178,15 +191,24 @@ export const supabaseService = {
 
   async upsertEndpoint(e: Endpoint) {
     if (!supabase) return;
-    const { error } = await supabase.from('endpoints').upsert({
+    const payload: any = {
       id: e.id,
       name: e.name,
       location: e.location,
       status: e.status,
       last_connected: e.lastConnected,
       updated_at: new Date().toISOString()
-    });
-    if (error) throw error;
+    };
+    const { error } = await supabase.from('endpoints').upsert(payload);
+    if (error) {
+      if (error.message?.includes('column "updated_at" of relation "endpoints" does not exist')) {
+        const { updated_at, ...fallback } = payload;
+        const { error: retryError } = await supabase.from('endpoints').upsert(fallback);
+        if (retryError) throw retryError;
+        return;
+      }
+      throw error;
+    }
   },
 
   async deleteEndpoint(id: string) {
@@ -204,8 +226,17 @@ export const supabaseService = {
 
   async upsertUnit(u: Unit) {
     if (!supabase) return;
-    const { error } = await supabase.from('units').upsert(unmapUnit(u));
-    if (error) throw error;
+    const payload = unmapUnit(u);
+    const { error } = await supabase.from('units').upsert(payload);
+    if (error) {
+      if (error.message?.includes('column "updated_at" of relation "units" does not exist')) {
+        const { updated_at, ...fallback } = payload as any;
+        const { error: retryError } = await supabase.from('units').upsert(fallback);
+        if (retryError) throw retryError;
+        return;
+      }
+      throw error;
+    }
   },
 
   async deleteUnit(id: string) {
@@ -223,8 +254,17 @@ export const supabaseService = {
 
   async upsertStaff(s: Staff) {
     if (!supabase) return;
-    const { error } = await supabase.from('staff').upsert(unmapStaff(s));
-    if (error) throw error;
+    const payload = unmapStaff(s);
+    const { error } = await supabase.from('staff').upsert(payload);
+    if (error) {
+      if (error.message?.includes('column "updated_at" of relation "staff" does not exist')) {
+        const { updated_at, ...fallback } = payload as any;
+        const { error: retryError } = await supabase.from('staff').upsert(fallback);
+        if (retryError) throw retryError;
+        return;
+      }
+      throw error;
+    }
   },
 
   async deleteStaff(id: string) {
