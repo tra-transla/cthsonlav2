@@ -123,36 +123,67 @@ const App: React.FC = () => {
           supabaseService.getSettings()
         ]);
 
-        // Only update if we actually got data or if it's explicitly empty but successful
-        // We avoid overwriting with empty arrays if the fetch might have failed silently
-        if (cloudMeetings.length > 0 || meetings.length === 0) {
-          setMeetings(cloudMeetings); 
-          storageService.saveMeetings(cloudMeetings);
+        // Merge logic: Combine cloud data with local-only data to prevent loss
+        if (cloudMeetings.length > 0) {
+          setMeetings(prev => {
+            const cloudIds = new Set(cloudMeetings.map(m => m.id));
+            const localOnly = prev.filter(m => !cloudIds.has(m.id));
+            const merged = [...cloudMeetings, ...localOnly].sort((a, b) => 
+              new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+            );
+            storageService.saveMeetings(merged);
+            return merged;
+          });
         }
         
-        if (cloudEndpoints.length > 0 || endpoints.length === 0) {
-          setEndpoints(cloudEndpoints); 
-          storageService.saveEndpoints(cloudEndpoints);
+        if (cloudEndpoints.length > 0) {
+          setEndpoints(prev => {
+            const cloudIds = new Set(cloudEndpoints.map(e => e.id));
+            const localOnly = prev.filter(e => !cloudIds.has(e.id));
+            const merged = [...cloudEndpoints, ...localOnly];
+            storageService.saveEndpoints(merged);
+            return merged;
+          });
         }
 
-        if (cloudUnits.length > 0 || units.length === 0) {
-          setUnits(cloudUnits); 
-          storageService.saveUnits(cloudUnits);
+        if (cloudUnits.length > 0) {
+          setUnits(prev => {
+            const cloudIds = new Set(cloudUnits.map(u => u.id));
+            const localOnly = prev.filter(u => !cloudIds.has(u.id));
+            const merged = [...cloudUnits, ...localOnly];
+            storageService.saveUnits(merged);
+            return merged;
+          });
         }
 
-        if (cloudStaff.length > 0 || staff.length === 0) {
-          setStaff(cloudStaff); 
-          storageService.saveStaff(cloudStaff);
+        if (cloudStaff.length > 0) {
+          setStaff(prev => {
+            const cloudIds = new Set(cloudStaff.map(s => s.id));
+            const localOnly = prev.filter(s => !cloudIds.has(s.id));
+            const merged = [...cloudStaff, ...localOnly];
+            storageService.saveStaff(merged);
+            return merged;
+          });
         }
 
-        if (cloudGroups.length > 0 || groups.length === 0) {
-          setGroups(cloudGroups); 
-          storageService.saveGroups(cloudGroups);
+        if (cloudGroups.length > 0) {
+          setGroups(prev => {
+            const cloudIds = new Set(cloudGroups.map(g => g.id));
+            const localOnly = prev.filter(g => !cloudIds.has(g.id));
+            const merged = [...cloudGroups, ...localOnly];
+            storageService.saveGroups(merged);
+            return merged;
+          });
         }
 
-        if (cloudUsers.length > 0 || users.length === 0) {
-          setUsers(cloudUsers); 
-          storageService.saveUsers(cloudUsers);
+        if (cloudUsers.length > 0) {
+          setUsers(prev => {
+            const cloudIds = new Set(cloudUsers.map(u => u.id));
+            const localOnly = prev.filter(u => !cloudIds.has(u.id));
+            const merged = [...cloudUsers, ...localOnly];
+            storageService.saveUsers(merged);
+            return merged;
+          });
         }
         
         if (cloudSettings) {
@@ -177,17 +208,17 @@ const App: React.FC = () => {
         const { eventType, old, mappedData } = payload;
         
         const updateMap: Record<string, any> = {
-          'meetings': { state: setMeetings },
-          'endpoints': { state: setEndpoints },
-          'units': { state: setUnits },
-          'staff': { state: setStaff },
-          'participant_groups': { state: setGroups },
-          'users': { state: setUsers }
+          'meetings': { state: setMeetings, storage: (data: any) => storageService.saveMeetings(data) },
+          'endpoints': { state: setEndpoints, storage: (data: any) => storageService.saveEndpoints(data) },
+          'units': { state: setUnits, storage: (data: any) => storageService.saveUnits(data) },
+          'staff': { state: setStaff, storage: (data: any) => storageService.saveStaff(data) },
+          'participant_groups': { state: setGroups, storage: (data: any) => storageService.saveGroups(data) },
+          'users': { state: setUsers, storage: (data: any) => storageService.saveUsers(data) }
         };
 
         if (table === 'system_settings' && mappedData) {
           setSystemSettings(mappedData);
-          storageService.saveSystemSettings(mappedData); // Cập nhật local khi có thay đổi từ cloud
+          storageService.saveSystemSettings(mappedData);
           return;
         }
 
@@ -199,14 +230,19 @@ const App: React.FC = () => {
               if (!prev.some(item => item.id === mappedData.id)) next = [mappedData, ...prev];
             } else if (eventType === 'UPDATE') {
               next = prev.map(item => item.id === mappedData.id ? mappedData : item);
-              setSelectedMeeting(current => (current && current.id === mappedData.id) ? mappedData : current);
-              if (currentUser && mappedData.id === currentUser.id) {
+              if (table === 'meetings') {
+                setSelectedMeeting(current => (current && current.id === mappedData.id) ? mappedData : current);
+              }
+              if (currentUser && table === 'users' && mappedData.id === currentUser.id) {
                 setCurrentUser(mappedData);
               }
             } else if (eventType === 'DELETE') {
               next = prev.filter(item => item.id !== old.id);
-              if (selectedMeeting?.id === old.id) setSelectedMeeting(null);
+              if (table === 'meetings' && selectedMeeting?.id === old.id) setSelectedMeeting(null);
             }
+            
+            // Persist real-time changes to local storage
+            config.storage(next);
             return next;
           });
         }
@@ -214,7 +250,7 @@ const App: React.FC = () => {
     });
 
     return () => subscriptions.forEach(sub => sub?.unsubscribe());
-  }, [selectedMeeting?.id, currentUser?.id]);
+  }, []); // Run only once on mount
 
   const dashboardStats = useMemo(() => {
     const now = new Date();
@@ -295,6 +331,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateMeeting = async (meeting: Meeting) => {
+    // 1. Update local state and storage first for immediate feedback
     setMeetings(prev => {
       const updated = prev.map(m => m.id === meeting.id ? meeting : m);
       storageService.saveMeetings(updated);
@@ -305,9 +342,11 @@ const App: React.FC = () => {
         setSelectedMeeting(meeting);
     }
     
+    // 2. Then sync to cloud
     if (supabaseService.isConfigured()) {
       try { 
         await supabaseService.upsertMeeting(meeting); 
+        setLastRefreshed(new Date());
       } catch (err) { 
         console.error("Cập nhật Cloud thất bại:", err); 
       }
@@ -699,12 +738,25 @@ const App: React.FC = () => {
       {selectedMeeting && <MeetingDetailModal meeting={selectedMeeting} onClose={() => setSelectedMeeting(null)} onUpdate={handleUpdateMeeting} />}
       {isCreateModalOpen && <CreateMeetingModal isOpen={isCreateModalOpen} onClose={() => { setIsCreateModalOpen(false); setEditingMeeting(null); }} onCreate={async (m) => {
         const newMeeting: Meeting = { ...m, id: m.id || `MEET-${Date.now()}`, status: 'SCHEDULED' };
+        
+        // 1. Save locally first
         setMeetings(prev => {
           const updated = [newMeeting, ...prev];
           storageService.saveMeetings(updated);
           return updated;
         });
-        if (supabaseService.isConfigured()) await supabaseService.upsertMeeting(newMeeting);
+        
+        // 2. Sync to cloud
+        if (supabaseService.isConfigured()) {
+          try {
+            await supabaseService.upsertMeeting(newMeeting);
+            setLastRefreshed(new Date());
+          } catch (err) {
+            console.error("Lưu Cloud thất bại:", err);
+          }
+        }
+        
+        setIsCreateModalOpen(false);
       }} onUpdate={handleUpdateMeeting} units={units} staff={staff} availableEndpoints={endpoints} editingMeeting={editingMeeting} />}
       
       {isChangePasswordOpen && currentUser && (
