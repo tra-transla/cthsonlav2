@@ -2,8 +2,20 @@
 import { createClient } from '@supabase/supabase-js';
 import { Meeting, Unit, Staff, Endpoint, User, SystemSettings, ParticipantGroup, EndpointStatus } from '../types';
 
-const supabaseUrl = (window as any).process?.env?.SUPABASE_URL || "";
-const supabaseAnonKey = (window as any).process?.env?.SUPABASE_ANON_KEY || "";
+const getEnv = (key: string) => {
+  // Try various ways to get env vars in Vite/Browser environments
+  return (window as any).process?.env?.[key] || 
+         (import.meta as any).env?.[`VITE_${key}`] || 
+         (import.meta as any).env?.[key] || 
+         "";
+};
+
+const supabaseUrl = getEnv('SUPABASE_URL');
+const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn("Supabase credentials missing. Check environment variables (SUPABASE_URL, SUPABASE_ANON_KEY).");
+}
 
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey) 
@@ -129,6 +141,7 @@ export const supabaseService = {
   async upsertMeeting(m: Meeting) {
     if (!supabase) return;
     const payload = unmapMeeting(m);
+    console.log("Upserting meeting to Supabase:", payload);
     const { error } = await supabase.from('meetings').upsert(payload);
     if (error) {
       console.error("Supabase error upserting meeting:", error);

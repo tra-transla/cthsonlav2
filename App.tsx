@@ -105,7 +105,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const syncData = async () => {
-      if (!supabaseService.isConfigured()) return;
+      if (!supabaseService.isConfigured()) {
+        console.log("Supabase not configured, using local storage only.");
+        setHasSyncedOnce(true);
+        return;
+      }
       
       setIsSyncing(true);
       try {
@@ -119,12 +123,37 @@ const App: React.FC = () => {
           supabaseService.getSettings()
         ]);
 
-        setMeetings(cloudMeetings); storageService.saveMeetings(cloudMeetings);
-        setEndpoints(cloudEndpoints); storageService.saveEndpoints(cloudEndpoints);
-        setUnits(cloudUnits); storageService.saveUnits(cloudUnits);
-        setStaff(cloudStaff); storageService.saveStaff(cloudStaff);
-        setGroups(cloudGroups); storageService.saveGroups(cloudGroups);
-        setUsers(cloudUsers); storageService.saveUsers(cloudUsers);
+        // Only update if we actually got data or if it's explicitly empty but successful
+        // We avoid overwriting with empty arrays if the fetch might have failed silently
+        if (cloudMeetings.length > 0 || meetings.length === 0) {
+          setMeetings(cloudMeetings); 
+          storageService.saveMeetings(cloudMeetings);
+        }
+        
+        if (cloudEndpoints.length > 0 || endpoints.length === 0) {
+          setEndpoints(cloudEndpoints); 
+          storageService.saveEndpoints(cloudEndpoints);
+        }
+
+        if (cloudUnits.length > 0 || units.length === 0) {
+          setUnits(cloudUnits); 
+          storageService.saveUnits(cloudUnits);
+        }
+
+        if (cloudStaff.length > 0 || staff.length === 0) {
+          setStaff(cloudStaff); 
+          storageService.saveStaff(cloudStaff);
+        }
+
+        if (cloudGroups.length > 0 || groups.length === 0) {
+          setGroups(cloudGroups); 
+          storageService.saveGroups(cloudGroups);
+        }
+
+        if (cloudUsers.length > 0 || users.length === 0) {
+          setUsers(cloudUsers); 
+          storageService.saveUsers(cloudUsers);
+        }
         
         if (cloudSettings) {
           setSystemSettings(cloudSettings);
@@ -287,7 +316,11 @@ const App: React.FC = () => {
 
   const handleDeleteMeeting = async (id: string) => {
     if (!window.confirm('Xóa cuộc họp này vĩnh viễn khỏi hệ thống?')) return;
-    setMeetings(prev => prev.filter(m => m.id !== id));
+    setMeetings(prev => {
+      const updated = prev.filter(m => m.id !== id);
+      storageService.saveMeetings(updated);
+      return updated;
+    });
     if (selectedMeeting?.id === id) setSelectedMeeting(null);
     if (supabaseService.isConfigured()) {
       try { await supabaseService.deleteMeeting(id); } catch (err) { console.error("Xóa thất bại:", err); }
@@ -374,10 +407,13 @@ const App: React.FC = () => {
           <button onClick={toggleSidebar} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"><Menu size={24} /></button>
           
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-200 rounded-full">
-                <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'}`}></div>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-                  {isSyncing ? 'Đang đồng bộ...' : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`}
+             <div className={`flex items-center gap-2 px-3 py-1 border rounded-full ${supabaseService.isConfigured() ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-100'}`}>
+                <div className={`w-2 h-2 rounded-full ${
+                  !supabaseService.isConfigured() ? 'bg-red-500' :
+                  isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'
+                }`}></div>
+                <span className={`text-[10px] font-black uppercase tracking-widest ${!supabaseService.isConfigured() ? 'text-red-600' : 'text-slate-500'}`}>
+                  {!supabaseService.isConfigured() ? 'Local Only' : (isSyncing ? 'Đang đồng bộ...' : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`)}
                 </span>
              </div>
           </div>
@@ -663,7 +699,11 @@ const App: React.FC = () => {
       {selectedMeeting && <MeetingDetailModal meeting={selectedMeeting} onClose={() => setSelectedMeeting(null)} onUpdate={handleUpdateMeeting} />}
       {isCreateModalOpen && <CreateMeetingModal isOpen={isCreateModalOpen} onClose={() => { setIsCreateModalOpen(false); setEditingMeeting(null); }} onCreate={async (m) => {
         const newMeeting: Meeting = { ...m, id: m.id || `MEET-${Date.now()}`, status: 'SCHEDULED' };
-        setMeetings(prev => [newMeeting, ...prev]);
+        setMeetings(prev => {
+          const updated = [newMeeting, ...prev];
+          storageService.saveMeetings(updated);
+          return updated;
+        });
         if (supabaseService.isConfigured()) await supabaseService.upsertMeeting(newMeeting);
       }} onUpdate={handleUpdateMeeting} units={units} staff={staff} availableEndpoints={endpoints} editingMeeting={editingMeeting} />}
       
