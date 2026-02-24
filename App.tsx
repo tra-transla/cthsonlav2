@@ -525,12 +525,12 @@ const App: React.FC = () => {
                  />
                )}
 
-               {/* Primary Stats */}
+                {/* Primary Stats */}
                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                  <StatCard title="Họp trong Tuần" value={dashboardStats.weekly} icon={<CalendarDays color={systemSettings.primaryColor} />} description="Tổng số cuộc họp diễn ra trong tuần này." />
-                  <StatCard title="Họp trong Tháng" value={dashboardStats.monthly} icon={<FileText color={systemSettings.primaryColor} />} description="Tổng số cuộc họp diễn ra trong tháng này." />
+                  <StatCard title="Họp trong Tuần" value={dashboardStats.weekly} icon={<CalendarDays color={systemSettings?.primaryColor || '#3B82F6'} />} description="Tổng số cuộc họp diễn ra trong tuần này." />
+                  <StatCard title="Họp trong Tháng" value={dashboardStats.monthly} icon={<FileText color={systemSettings?.primaryColor || '#3B82F6'} />} description="Tổng số cuộc họp diễn ra trong tháng này." />
                   <StatCard title="Họp trong Năm" value={dashboardStats.yearly} icon={<BarChart3 className="text-amber-500" />} description={`Tổng số cuộc họp trong năm ${new Date().getFullYear()}.`} />
-                  <StatCard title="Uptime Hạ tầng" value={`${dashboardStats.uptime}%`} icon={<MonitorPlay color={systemSettings.primaryColor} />} description="Tỷ lệ điểm cầu đang trực tuyến." />
+                  <StatCard title="Uptime Hạ tầng" value={`${dashboardStats.uptime}%`} icon={<MonitorPlay color={systemSettings?.primaryColor || '#3B82F6'} />} description="Tỷ lệ điểm cầu đang trực tuyến." />
                </div>
 
                {/* Efficiency KPIs Section */}
@@ -575,11 +575,11 @@ const App: React.FC = () => {
                            <AreaChart data={dashboardStats.last7Days}>
                               <defs>
                                 <linearGradient id="colorCount" x1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor={systemSettings.primaryColor} stopOpacity={0.3}/>
-                                  <stop offset="95%" stopColor={systemSettings.primaryColor} stopOpacity={0}/>
+                                  <stop offset="5%" stopColor={systemSettings?.primaryColor || '#3B82F6'} stopOpacity={0.3}/>
+                                  <stop offset="95%" stopColor={systemSettings?.primaryColor || '#3B82F6'} stopOpacity={0}/>
                                 </linearGradient>
                               </defs>
-                              <Area type="monotone" dataKey="count" stroke={systemSettings.primaryColor} strokeWidth={4} fill="url(#colorCount)" />
+                              <Area type="monotone" dataKey="count" stroke={systemSettings?.primaryColor || '#3B82F6'} strokeWidth={4} fill="url(#colorCount)" />
                               <XAxis dataKey="name" fontSize={10} fontWeight="bold" tick={{fill: '#94a3b8'}} />
                               <YAxis fontSize={10} fontWeight="bold" tick={{fill: '#94a3b8'}} />
                               <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />

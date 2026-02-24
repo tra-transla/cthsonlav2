@@ -204,7 +204,7 @@ const ExportPage: React.FC = () => {
                    <div key={cat} className="mb-4">
                       <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-2 ml-1">{cat}</p>
                       <div className="space-y-1.5">
-                        {files.filter(f => f.category === cat).map(file => (
+                        {Array.isArray(files) && files.filter(f => f && f.category === cat).map(file => (
                           <div key={file.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-transparent hover:border-blue-100 hover:bg-blue-50 transition-all group">
                              <div className="flex items-center gap-3 overflow-hidden">
                                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-blue-600 shadow-sm transition-colors">
