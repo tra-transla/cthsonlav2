@@ -35,6 +35,52 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
+/**
+ * Hàm hỗ trợ Upsert an toàn: Tự động loại bỏ các cột không tồn tại trong Database và thử lại.
+ */
+async function safeUpsert(table: string, payload: any) {
+  if (!supabase) return;
+  
+  try {
+    const { error } = await supabase.from(table).upsert(payload);
+    if (!error) return;
+
+    // Kiểm tra nếu lỗi là do thiếu cột trong Schema
+    const errorMsg = error.message || "";
+    if (
+      errorMsg.includes('column') || 
+      errorMsg.includes('does not exist') || 
+      errorMsg.includes('schema cache')
+    ) {
+      console.warn(`Supabase Schema Mismatch in table "${table}":`, errorMsg);
+      
+      // Cố gắng trích xuất tên cột bị thiếu từ thông báo lỗi
+      // Định dạng 1: column "xyz" of relation "abc" does not exist
+      // Định dạng 2: Could not find the 'xyz' column of 'abc' in the schema cache
+      const match = errorMsg.match(/column "([^"]+)"/) || errorMsg.match(/the '([^']+)' column/);
+      
+      if (match && match[1]) {
+        const missingColumn = match[1];
+        console.info(`Retrying upsert to "${table}" without missing column: ${missingColumn}`);
+        const { [missingColumn]: _, ...newPayload } = payload;
+        return safeUpsert(table, newPayload); // Đệ quy thử lại với payload đã lọc
+      }
+      
+      // Nếu không bắt được tên cột cụ thể nhưng biết là lỗi schema, thử bỏ qua updated_at nếu có
+      if (payload.updated_at) {
+        console.info(`Retrying upsert to "${table}" without updated_at...`);
+        const { updated_at, ...fallbackPayload } = payload;
+        return safeUpsert(table, fallbackPayload);
+      }
+    }
+    
+    throw error;
+  } catch (err) {
+    console.error(`Final error in safeUpsert for table "${table}":`, err);
+    throw err;
+  }
+}
+
 // --- MAPPERS: Chuyển đổi snake_case (DB) <-> camelCase (App) ---
 
 const mapMeeting = (m: any): Meeting => ({
@@ -183,25 +229,9 @@ export const supabaseService = {
   },
 
   async upsertMeeting(m: Meeting) {
-    if (!supabase) return;
     const payload = unmapMeeting(m);
     console.log("Attempting to upsert meeting:", payload.id);
-    
-    const { error } = await supabase.from('meetings').upsert(payload);
-    
-    if (error) {
-      console.error("Supabase upsert error:", error);
-      
-      // Fallback if updated_at is missing
-      if (error.message?.includes('updated_at') && error.message?.includes('does not exist')) {
-        console.warn("Retrying without updated_at column...");
-        const { updated_at, ...fallbackPayload } = payload as any;
-        const { error: retryError } = await supabase.from('meetings').upsert(fallbackPayload);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('meetings', payload);
     console.log("Upsert successful:", payload.id);
   },
 
@@ -219,7 +249,6 @@ export const supabaseService = {
   },
 
   async upsertEndpoint(e: Endpoint) {
-    if (!supabase) return;
     const payload: any = {
       id: e.id,
       name: e.name,
@@ -228,16 +257,7 @@ export const supabaseService = {
       last_connected: e.lastConnected,
       updated_at: new Date().toISOString()
     };
-    const { error } = await supabase.from('endpoints').upsert(payload);
-    if (error) {
-      if (error.message?.includes('column "updated_at" of relation "endpoints" does not exist')) {
-        const { updated_at, ...fallback } = payload;
-        const { error: retryError } = await supabase.from('endpoints').upsert(fallback);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('endpoints', payload);
   },
 
   async deleteEndpoint(id: string) {
@@ -254,18 +274,8 @@ export const supabaseService = {
   },
 
   async upsertUnit(u: Unit) {
-    if (!supabase) return;
     const payload = unmapUnit(u);
-    const { error } = await supabase.from('units').upsert(payload);
-    if (error) {
-      if (error.message?.includes('column "updated_at" of relation "units" does not exist')) {
-        const { updated_at, ...fallback } = payload as any;
-        const { error: retryError } = await supabase.from('units').upsert(fallback);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('units', payload);
   },
 
   async deleteUnit(id: string) {
@@ -282,18 +292,8 @@ export const supabaseService = {
   },
 
   async upsertStaff(s: Staff) {
-    if (!supabase) return;
     const payload = unmapStaff(s);
-    const { error } = await supabase.from('staff').upsert(payload);
-    if (error) {
-      if (error.message?.includes('column "updated_at" of relation "staff" does not exist')) {
-        const { updated_at, ...fallback } = payload as any;
-        const { error: retryError } = await supabase.from('staff').upsert(fallback);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('staff', payload);
   },
 
   async deleteStaff(id: string) {
@@ -309,18 +309,8 @@ export const supabaseService = {
   },
 
   async upsertGroup(g: ParticipantGroup) {
-    if (!supabase) return;
     const payload = { ...g, updated_at: new Date().toISOString() };
-    const { error } = await supabase.from('participant_groups').upsert(payload);
-    if (error) {
-      if (error.message?.includes('column "updated_at" of relation "participant_groups" does not exist')) {
-        const { updated_at, ...fallback } = payload as any;
-        const { error: retryError } = await supabase.from('participant_groups').upsert(fallback);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('participant_groups', payload);
   },
 
   async deleteGroup(id: string) {
@@ -337,18 +327,8 @@ export const supabaseService = {
   },
 
   async upsertUser(u: User) {
-    if (!supabase) return;
     const payload = unmapUser(u);
-    const { error } = await supabase.from('users').upsert(payload);
-    if (error) {
-      if (error.message?.includes('column "updated_at" of relation "users" does not exist')) {
-        const { updated_at, ...fallback } = payload as any;
-        const { error: retryError } = await supabase.from('users').upsert(fallback);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('users', payload);
   },
 
   async deleteUser(id: string) {
@@ -373,18 +353,8 @@ export const supabaseService = {
   },
 
   async updateSettings(s: SystemSettings) {
-    if (!supabase) return;
     const payload = unmapSettings(s);
-    const { error } = await supabase.from('system_settings').upsert(payload);
-    if (error) {
-      if (error.message?.includes('column "updated_at" of relation "system_settings" does not exist')) {
-        const { updated_at, ...fallback } = payload as any;
-        const { error: retryError } = await supabase.from('system_settings').upsert(fallback);
-        if (retryError) throw retryError;
-        return;
-      }
-      throw error;
-    }
+    await safeUpsert('system_settings', payload);
   },
 
   subscribeTable(table: string, callback: (payload: any) => void) {
