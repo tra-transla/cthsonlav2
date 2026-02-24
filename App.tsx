@@ -204,6 +204,7 @@ const App: React.FC = () => {
     const tables = ['meetings', 'endpoints', 'units', 'staff', 'participant_groups', 'users', 'system_settings'];
     const subscriptions = tables.map(table => {
       return supabaseService.subscribeTable(table, (payload) => {
+        if (!payload) return;
         const { eventType, old, mappedData } = payload;
         
         const updateMap: Record<string, any> = {

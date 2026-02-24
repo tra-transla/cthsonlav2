@@ -21,6 +21,10 @@ const DEFAULT_SETTINGS: SystemSettings = {
 
 export const storageService = {
   init() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      console.warn("localStorage is not available in this environment.");
+      return;
+    }
     try {
       if (!localStorage.getItem(DB_KEYS.UNITS)) {
         localStorage.setItem(DB_KEYS.UNITS, JSON.stringify(MOCK_UNITS));

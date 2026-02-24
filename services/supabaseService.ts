@@ -5,11 +5,21 @@ import { Meeting, Unit, Staff, Endpoint, User, SystemSettings, ParticipantGroup,
 const getEnv = (key: string) => {
   // Prioritize Vite's import.meta.env (handles .env and Vercel/Cloud environment variables)
   const viteKey = `VITE_${key}`;
-  const envValue = (import.meta as any).env?.[viteKey] || (import.meta as any).env?.[key];
+  let envValue = "";
+  try {
+    envValue = (import.meta as any).env?.[viteKey] || (import.meta as any).env?.[key];
+  } catch (e) {
+    // import.meta might not be available
+  }
+  
   if (envValue) return envValue;
 
   // Fallback to window.process.env shim
-  return (window as any).process?.env?.[key] || "";
+  try {
+    return (window as any).process?.env?.[key] || "";
+  } catch (e) {
+    return "";
+  }
 };
 
 const supabaseUrl = getEnv('SUPABASE_URL');

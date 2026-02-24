@@ -8,7 +8,8 @@ import { GoogleGenAI } from "@google/genai";
 export const analyzeMeetingEfficiency = async (meetingData: any) => {
   try {
     // Khởi tạo instance GoogleGenAI trực tiếp bằng process.env.API_KEY theo đúng quy định
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const apiKey = (window as any).process?.env?.API_KEY || (import.meta as any).env?.VITE_API_KEY || "";
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Phân tích hiệu quả và đề xuất cải thiện cho cuộc họp sau: ${JSON.stringify(meetingData)}. 
