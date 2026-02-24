@@ -65,3 +65,53 @@ body {
     display: block !important;
   }
 }
+
+/* Fix for html2canvas not supporting oklch colors (Tailwind 4 default) */
+.pdf-safe {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.pdf-safe .bg-white { background-color: #ffffff !important; }
+.pdf-safe .bg-slate-900 { background-color: #0f172a !important; }
+.pdf-safe .bg-slate-50 { background-color: #f8fafc !important; }
+.pdf-safe .bg-slate-50\/30 { background-color: rgba(248, 250, 252, 0.3) !important; }
+.pdf-safe .bg-blue-50 { background-color: #eff6ff !important; }
+.pdf-safe .bg-blue-600 { background-color: #2563eb !important; }
+.pdf-safe .bg-slate-800 { background-color: #1e293b !important; }
+.pdf-safe .bg-emerald-50 { background-color: #ecfdf5 !important; }
+.pdf-safe .bg-amber-50 { background-color: #fffbeb !important; }
+.pdf-safe .bg-red-50 { background-color: #fef2f2 !important; }
+.pdf-safe .bg-indigo-50 { background-color: #eef2ff !important; }
+.pdf-safe .bg-emerald-100 { background-color: #d1fae5 !important; }
+.pdf-safe .bg-amber-100 { background-color: #fef3c7 !important; }
+.pdf-safe .bg-red-100 { background-color: #fee2e2 !important; }
+
+.pdf-safe .text-slate-900 { color: #0f172a !important; }
+.pdf-safe .text-slate-400 { color: #94a3b8 !important; }
+.pdf-safe .text-blue-600 { color: #2563eb !important; }
+.pdf-safe .text-emerald-600 { color: #059669 !important; }
+.pdf-safe .text-amber-600 { color: #d97706 !important; }
+.pdf-safe .text-red-600 { color: #dc2626 !important; }
+.pdf-safe .text-indigo-600 { color: #4f46e5 !important; }
+.pdf-safe .text-white { color: #ffffff !important; }
+.pdf-safe .text-blue-400 { color: #60a5fa !important; }
+.pdf-safe .text-emerald-400 { color: #34d399 !important; }
+.pdf-safe .text-amber-400 { color: #fbbf24 !important; }
+.pdf-safe .text-slate-500 { color: #64748b !important; }
+.pdf-safe .text-slate-700 { color: #334155 !important; }
+.pdf-safe .text-slate-600 { color: #475569 !important; }
+.pdf-safe .text-red-500 { color: #ef4444 !important; }
+
+.pdf-safe .border-slate-900 { border-color: #0f172a !important; }
+.pdf-safe .border-slate-100 { border-color: #f1f5f9 !important; }
+.pdf-safe .border-slate-50 { border-color: #f8fafc !important; }
+.pdf-safe .border-gray-50 { border-color: #f9fafb !important; }
+.pdf-safe .border-gray-100 { border-color: #f3f4f6 !important; }
+.pdf-safe .border-blue-100 { border-color: #dbeafe !important; }
+.pdf-safe .border-emerald-100 { border-color: #d1fae5 !important; }
+.pdf-safe .border-amber-100 { border-color: #fef3c7 !important; }
+.pdf-safe .border-red-100 { border-color: #fee2e2 !important; }
+
+.pdf-safe .divide-slate-100 > * + * { border-color: #f1f5f9 !important; }
+.pdf-safe .divide-slate-50 > * + * { border-color: #f8fafc !important; }

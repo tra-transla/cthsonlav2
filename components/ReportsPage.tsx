@@ -131,13 +131,34 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
         filename: `Bao_cao_CTH_Son_La_${new Date().toISOString().slice(0,10)}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 1, // Sử dụng scale 1 để an toàn nhất cho bộ nhớ
+          scale: 1, 
           useCORS: true, 
           logging: false,
           backgroundColor: '#ffffff',
           scrollY: 0,
           windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight
+          windowHeight: element.scrollHeight,
+          onclone: (clonedDoc: Document) => {
+            // Failsafe: Tìm và thay thế tất cả oklch bằng hex cơ bản trong tài liệu đã clone
+            const elements = clonedDoc.getElementsByClassName('pdf-safe');
+            if (elements.length > 0) {
+              const container = elements[0] as HTMLElement;
+              container.style.backgroundColor = '#ffffff';
+              container.style.color = '#0f172a';
+              
+              // Duyệt qua tất cả các phần tử con và xóa bỏ các style có chứa oklch nếu có
+              const allElements = container.getElementsByTagName('*');
+              for (let i = 0; i < allElements.length; i++) {
+                const el = allElements[i] as HTMLElement;
+                if (el.style) {
+                  // Nếu style inline có chứa oklch, xóa nó đi để html2canvas không bị lỗi
+                  if (el.getAttribute('style')?.includes('oklch')) {
+                    el.removeAttribute('style');
+                  }
+                }
+              }
+            }
+          }
         },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'landscape' as const }
       };
@@ -217,7 +238,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
       </div>
 
       {/* Report Document Content */}
-      <div ref={reportRef} className="bg-white rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 min-h-[1000px]">
+      <div ref={reportRef} className="bg-white rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 min-h-[1000px] pdf-safe">
         {/* Header */}
         <div className="border-b-2 border-slate-900 pb-8 flex justify-between items-end">
           <div className="space-y-1">
