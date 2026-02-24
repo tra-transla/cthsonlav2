@@ -16,13 +16,18 @@ export default defineConfig({
     sourcemap: false,
     minify: 'esbuild',
     target: 'esnext',
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {
           'vendor': ['react', 'react-dom'],
           'charts': ['recharts'],
           'utils': ['html2pdf.js', 'jszip', 'file-saver']
-        }
+        },
+        // Đảm bảo định dạng file output chuẩn
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
       }
     }
   },
