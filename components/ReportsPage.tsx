@@ -27,6 +27,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
   });
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [groupBy, setGroupBy] = useState<GroupByOption>('month');
+  const [isGenerating, setIsGenerating] = useState(false);
   
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -113,16 +114,34 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
     })).sort((a, b) => groupBy === 'unit' ? b.value - a.value : 0);
   }, [filteredMeetings, groupBy]);
 
-  const downloadPDF = () => {
-    if (!reportRef.current) return;
-    const opt = {
-      margin: 10,
-      filename: `Bao_cao_CTH_Son_La_${new Date().toISOString().slice(0,10)}.pdf`,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-      jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'landscape' as const }
-    };
-    html2pdf().from(reportRef.current).set(opt).save();
+  const downloadPDF = async () => {
+    if (!reportRef.current || isGenerating) return;
+    
+    setIsGenerating(true);
+    try {
+      const element = reportRef.current;
+      const opt = {
+        margin: 10,
+        filename: `Bao_cao_CTH_Son_La_${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.95 },
+        html2canvas: { 
+          scale: 1.5, 
+          useCORS: true, 
+          logging: false,
+          letterRendering: false,
+          allowTaint: true
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
+      };
+      
+      // Use the promise-based API of html2pdf
+      await html2pdf().from(element).set(opt).save();
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      alert("Có lỗi xảy ra khi tạo file PDF. Vui lòng thử lại hoặc chụp ảnh màn hình.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -164,10 +183,22 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
             </div>
             <button 
               onClick={downloadPDF} 
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all flex items-center gap-2"
+              disabled={isGenerating}
+              className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl transition-all flex items-center gap-2 ${
+                isGenerating ? 'bg-slate-400 cursor-not-allowed' : 'bg-slate-900 hover:bg-slate-800 text-white'
+              }`}
             >
-              <Download size={16} />
-              Tải PDF
+              {isGenerating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  Đang xử lý...
+                </>
+              ) : (
+                <>
+                  <Download size={16} />
+                  Tải PDF
+                </>
+              )}
             </button>
           </div>
         </div>
