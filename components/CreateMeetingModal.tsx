@@ -63,10 +63,10 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
         startTime: formatISOToLocalInput(editingMeeting.startTime),
         endTime: formatISOToLocalInput(editingMeeting.endTime),
         description: editingMeeting.description,
-        participants: editingMeeting.participants.join(', '),
+        participants: Array.isArray(editingMeeting.participants) ? editingMeeting.participants.join(', ') : '',
         invitationLink: editingMeeting.invitationLink || '',
       });
-      setSelectedEndpointIds(editingMeeting.endpoints.map(e => e.id));
+      setSelectedEndpointIds(Array.isArray(editingMeeting.endpoints) ? editingMeeting.endpoints.map(e => e && e.id).filter(Boolean) : []);
     } else {
       setFormData({
         title: '',
@@ -90,9 +90,12 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
   }, [formData.hostUnitId, staff]);
 
   const filteredEndpoints = useMemo(() => {
+    if (!Array.isArray(availableEndpoints)) return [];
     return availableEndpoints.filter(ep => 
-      ep.name.toLowerCase().includes(endpointSearch.toLowerCase()) ||
-      ep.location.toLowerCase().includes(endpointSearch.toLowerCase())
+      ep && (
+        (ep.name || '').toLowerCase().includes(endpointSearch.toLowerCase()) ||
+        (ep.location || '').toLowerCase().includes(endpointSearch.toLowerCase())
+      )
     );
   }, [endpointSearch, availableEndpoints]);
 

@@ -422,21 +422,31 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] border-l-2 border-blue-500 pl-3">Thành phần tham gia</h4>
                 <div className="flex flex-wrap gap-2">
-                  {selectedPublicMeeting.participants.map((p, i) => (
+                  {Array.isArray(selectedPublicMeeting.participants) && selectedPublicMeeting.participants.map((p, i) => (
                     <span key={i} className="px-3 py-1 bg-white/5 text-white/70 text-[10px] font-bold rounded-lg border border-white/5 uppercase tracking-tight">{p}</span>
                   ))}
+                  {(!Array.isArray(selectedPublicMeeting.participants) || selectedPublicMeeting.participants.length === 0) && (
+                    <span className="text-[10px] text-white/40 italic">Chưa xác định thành phần tham gia</span>
+                  )}
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] border-l-2 border-cyan-500 pl-3">Điểm cầu kết nối ({selectedPublicMeeting.endpoints.length})</h4>
+                <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] border-l-2 border-cyan-500 pl-3">
+                  Điểm cầu kết nối ({Array.isArray(selectedPublicMeeting.endpoints) ? selectedPublicMeeting.endpoints.length : 0})
+                </h4>
                 <div className="grid grid-cols-2 gap-3">
-                  {selectedPublicMeeting.endpoints.map(ep => (
+                  {Array.isArray(selectedPublicMeeting.endpoints) && selectedPublicMeeting.endpoints.map(ep => (
                     <div key={ep.id} className="p-3 bg-white/5 border border-white/5 rounded-xl flex items-center gap-3">
                       <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                       <span className="text-[11px] font-bold text-white/80 truncate uppercase tracking-tight">{ep.name}</span>
                     </div>
                   ))}
+                  {(!Array.isArray(selectedPublicMeeting.endpoints) || selectedPublicMeeting.endpoints.length === 0) && (
+                    <div className="col-span-2 p-3 bg-white/5 border border-white/5 rounded-xl text-center">
+                      <span className="text-[10px] text-white/40 italic">Không có điểm cầu kết nối</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -279,7 +279,8 @@ const App: React.FC = () => {
 
     const topUnit = unitStats[0]?.name || "Chưa xác định";
     const connected = (endpoints || []).filter(e => e && e.status === EndpointStatus.CONNECTED).length;
-    const uptime = (endpoints || []).length > 0 ? ((connected / endpoints.length) * 100).toFixed(1) : "0";
+    const totalEndpoints = (endpoints || []).length;
+    const uptime = totalEndpoints > 0 ? ((connected / totalEndpoints) * 100).toFixed(1) : "0";
 
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();

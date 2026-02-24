@@ -1,39 +1,48 @@
-export default {
-  async fetch(request: Request, env: any): Promise<Response> {
-    // Xử lý CORS preflight cho các request từ browser
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-          'Access-Control-Allow-Headers': 'apikey,Authorization,Content-Type',
-          'Access-Control-Max-Age': '86400'
-        }
-      });
-    }
 
-    const { pathname, searchParams } = new URL(request.url);
-    const supabaseUrl = 'https://uhaqofhnfetdkciaswof.supabase.co';
-    const supabaseKey = env.SUPABASE_SERVICE_KEY;
-    
-    // Ví dụ: Lấy dữ liệu từ bảng users
-    const response = await fetch(`${supabaseUrl}/rest/v1/users${searchParams}`, {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
-      }
-    });
-    
-    const data = await response.text();
-    
-    return new Response(data, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'apikey,Authorization,Content-Type'
-      }
-    });
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+
+console.log("Application starting...");
+
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
   }
-} satisfies ExportedHandler<Env>;
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '20px', color: 'red', fontFamily: 'sans-serif' }}>
+          <h1>Something went wrong.</h1>
+          <pre>{this.state.error?.toString()}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+);

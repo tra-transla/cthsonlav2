@@ -232,18 +232,19 @@ const MeetingDetailModal: React.FC<MeetingDetailModalProps> = ({ meeting, onClos
 
           <div className="md:col-span-4 space-y-8">
              <section>
-                <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4">Thành phần ({meeting.participants.length})</h4>
+                <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest mb-4">Thành phần ({Array.isArray(meeting.participants) ? meeting.participants.length : 0})</h4>
                 <div className="flex flex-wrap gap-2 max-h-[120px] overflow-y-auto pr-2 custom-scrollbar">
-                   {meeting.participants.map((p, i) => (
+                   {Array.isArray(meeting.participants) && meeting.participants.map((p, i) => (
                       <span key={i} className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-lg border border-indigo-100 uppercase tracking-tight">{p}</span>
                    ))}
                 </div>
              </section>
 
              <section>
-                <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4">Các điểm cầu ({meeting.endpoints.length})</h4>
+                <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4">Các điểm cầu ({Array.isArray(meeting.endpoints) ? meeting.endpoints.length : 0})</h4>
                 <div className="space-y-3 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                   {meeting.endpoints.map(ep => {
+                   {Array.isArray(meeting.endpoints) && meeting.endpoints.map(ep => {
+                      if (!ep) return null;
                       const checkInfo = meeting.endpointChecks?.[ep.id];
                       const isChecked = checkInfo?.checked;
                       const techNotes = checkInfo?.notes;
