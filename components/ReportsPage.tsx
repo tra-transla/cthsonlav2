@@ -118,27 +118,39 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
     if (!reportRef.current || isGenerating) return;
     
     setIsGenerating(true);
+    console.log("Starting PDF generation...");
+    
     try {
       const element = reportRef.current;
+      
+      // Đợi một chút để đảm bảo UI đã ổn định
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const opt = {
         margin: 10,
         filename: `Bao_cao_CTH_Son_La_${new Date().toISOString().slice(0,10)}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 1.5, 
+          scale: 1, // Sử dụng scale 1 để an toàn nhất cho bộ nhớ
           useCORS: true, 
           logging: false,
-          letterRendering: false,
-          allowTaint: true
+          backgroundColor: '#ffffff',
+          scrollY: 0,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' as const }
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'landscape' as const }
       };
       
-      // Use the promise-based API of html2pdf
-      await html2pdf().from(element).set(opt).save();
-    } catch (error) {
-      console.error("PDF Generation Error:", error);
-      alert("Có lỗi xảy ra khi tạo file PDF. Vui lòng thử lại hoặc chụp ảnh màn hình.");
+      // Sử dụng API worker của html2pdf để kiểm soát tốt hơn
+      const worker = html2pdf().set(opt).from(element);
+      await worker.save();
+      
+      console.log("PDF generated successfully");
+    } catch (error: any) {
+      console.error("PDF Generation Error Details:", error);
+      const errorMsg = error?.message || (typeof error === 'string' ? error : "Lỗi không xác định");
+      alert(`Không thể tạo PDF: ${errorMsg}\n\nGợi ý: Bạn có thể thử chụp ảnh màn hình hoặc in trang web (Ctrl+P) nếu cần gấp.`);
     } finally {
       setIsGenerating(false);
     }
