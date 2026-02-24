@@ -1,5 +1,5 @@
 export default {
-  async fetch(request, env) {
+  async fetch(request: Request, env: any): Promise<Response> {
     // Xử lý CORS preflight cho các request từ browser
     if (request.method === 'OPTIONS') {
       return new Response(null, {
@@ -22,7 +22,7 @@ export default {
         'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`,
         'Content-Type': 'application/json',
-        'Prefer': 'return=representation' // Để Supabase trả về dữ liệu
+        'Prefer': 'return=representation'
       }
     });
     
@@ -36,4 +36,4 @@ export default {
       }
     });
   }
-};
+} satisfies ExportedHandler<Env>;
