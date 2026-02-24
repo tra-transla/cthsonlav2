@@ -24,18 +24,25 @@ const UserManagement: React.FC<UserManagementProps> = ({
   const [passwordForm, setPasswordForm] = useState({ pass: '', confirm: '' });
   const [error, setError] = useState('');
 
-  const stats = useMemo(() => ({
-    total: users.length,
-    admins: users.filter(u => u.role === 'ADMIN').length,
-    operators: users.filter(u => u.role === 'OPERATOR').length,
-    viewers: users.filter(u => u.role === 'VIEWER').length,
-  }), [users]);
+  const stats = useMemo(() => {
+    if (!Array.isArray(users)) return { total: 0, admins: 0, operators: 0, viewers: 0 };
+    return {
+      total: users.length,
+      admins: users.filter(u => u && u.role === 'ADMIN').length,
+      operators: users.filter(u => u && u.role === 'OPERATOR').length,
+      viewers: users.filter(u => u && u.role === 'VIEWER').length,
+    };
+  }, [users]);
 
-  const filteredUsers = useMemo(() => 
-    users.filter(u => 
-      u.username.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      u.fullName.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [users, searchTerm]);
+  const filteredUsers = useMemo(() => {
+    if (!Array.isArray(users)) return [];
+    return users.filter(u => 
+      u && (
+        (u.username || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (u.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+  }, [users, searchTerm]);
 
   const openModal = (user: User | null = null) => {
     setError('');

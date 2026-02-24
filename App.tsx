@@ -78,7 +78,11 @@ const App: React.FC = () => {
       });
 
       // Lấy cuộc họp gần nhất để hiển thị Banner trên Dashboard
-      const nextOne = upcoming.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+      const nextOne = upcoming.sort((a, b) => {
+        const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
+        const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
+        return timeA - timeB;
+      })[0];
       setCurrentAlertMeeting(nextOne || null);
 
       // Xử lý gửi thông báo đẩy và Toast cho cuộc họp trong vòng 15 phút
@@ -319,7 +323,14 @@ const App: React.FC = () => {
       avgDuration: avgDurationHours,
       onTimeRate: onTimeRate,
       engagementScore: engagementScore,
-      recentMeetings: [...(meetings || [])].filter(m => m && m.startTime).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5)
+      recentMeetings: [...(meetings || [])]
+        .filter(m => m && m.startTime)
+        .sort((a, b) => {
+          const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
+          const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
+          return timeB - timeA;
+        })
+        .slice(0, 5)
     };
   }, [meetings, endpoints]);
 
