@@ -52,21 +52,27 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
   };
 
   const filteredMeetings = useMemo(() => {
-    const startTs = new Date(startDate).setHours(0,0,0,0);
-    const endTs = new Date(endDate).setHours(23,59,59,999);
+    if (!Array.isArray(meetings)) return [];
+    const startTs = new Date(startDate || 0).setHours(0,0,0,0);
+    const endTs = new Date(endDate || Date.now()).setHours(23,59,59,999);
     return meetings.filter(m => {
+      if (!m || !m.startTime) return false;
       const mTime = new Date(m.startTime).getTime();
       return mTime >= startTs && mTime <= endTs;
-    }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+    }).sort((a, b) => {
+      const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
+      const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
+      return timeA - timeB;
+    });
   }, [meetings, startDate, endDate]);
 
   const reportStats = useMemo(() => {
     const total = filteredMeetings.length;
-    const scheduled = filteredMeetings.filter(m => m.status === 'SCHEDULED' || !m.status).length;
-    const cancelled = filteredMeetings.filter(m => m.status === 'CANCELLED').length;
-    const postponed = filteredMeetings.filter(m => m.status === 'POSTPONED').length;
+    const scheduled = filteredMeetings.filter(m => m && (m.status === 'SCHEDULED' || !m.status)).length;
+    const cancelled = filteredMeetings.filter(m => m && m.status === 'CANCELLED').length;
+    const postponed = filteredMeetings.filter(m => m && m.status === 'POSTPONED').length;
     
-    const uniqueUnits = new Set(filteredMeetings.map(m => m.hostUnit)).size;
+    const uniqueUnits = new Set(filteredMeetings.filter(m => m && m.hostUnit).map(m => m.hostUnit)).size;
     
     // Thống kê theo tuần, tháng, năm của thời điểm hiện tại
     const now = new Date();
@@ -77,9 +83,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-    const currentWeekCount = meetings.filter(m => m.status !== 'CANCELLED' && new Date(m.startTime) >= startOfWeek).length;
-    const currentMonthCount = meetings.filter(m => m.status !== 'CANCELLED' && new Date(m.startTime) >= startOfMonth).length;
-    const currentYearCount = meetings.filter(m => m.status !== 'CANCELLED' && new Date(m.startTime) >= startOfYear).length;
+    const currentWeekCount = (meetings || []).filter(m => m && m.status !== 'CANCELLED' && m.startTime && new Date(m.startTime) >= startOfWeek).length;
+    const currentMonthCount = (meetings || []).filter(m => m && m.status !== 'CANCELLED' && m.startTime && new Date(m.startTime) >= startOfMonth).length;
+    const currentYearCount = (meetings || []).filter(m => m && m.status !== 'CANCELLED' && m.startTime && new Date(m.startTime) >= startOfYear).length;
     
     return { total, scheduled, cancelled, postponed, uniqueUnits, currentWeekCount, currentMonthCount, currentYearCount };
   }, [filteredMeetings, meetings]);
@@ -334,10 +340,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
                       {new Date(m.startTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black">{m.endpoints.length}</span>
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black">{Array.isArray(m.endpoints) ? m.endpoints.length : 0}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-black">{m.participants.length}</span>
+                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-black">{Array.isArray(m.participants) ? m.participants.length : 0}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {m.status === 'CANCELLED' ? (

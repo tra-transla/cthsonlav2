@@ -17,15 +17,20 @@ const MonitoringGrid: React.FC<MonitoringGridProps> = ({ endpoints, onUpdateEndp
   const [currentPage, setCurrentPage] = useState(1);
 
   const locations = useMemo(() => {
-    return Array.from(new Set(endpoints.map(e => e.location))).sort();
+    if (!Array.isArray(endpoints)) return [];
+    return Array.from(new Set(endpoints.filter(e => e && e.location).map(e => e.location))).sort();
   }, [endpoints]);
 
   const filteredEndpoints = useMemo(() => {
+    if (!Array.isArray(endpoints)) return [];
     return endpoints.filter(ep => {
+      if (!ep) return false;
       const matchesStatus = statusFilter === 'ALL' || ep.status === statusFilter;
       const matchesLocation = locationFilter === 'ALL' || ep.location === locationFilter;
-      const matchesSearch = ep.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            ep.location.toLowerCase().includes(searchTerm.toLowerCase());
+      const name = ep.name || '';
+      const location = ep.location || '';
+      const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            location.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesStatus && matchesLocation && matchesSearch;
     });
   }, [endpoints, statusFilter, locationFilter, searchTerm]);

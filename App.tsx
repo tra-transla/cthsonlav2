@@ -105,17 +105,24 @@ const App: React.FC = () => {
 
   const mergeData = <T extends { id: string, updatedAt?: string }>(cloudData: T[], localData: T[]): T[] => {
     const mergedMap = new Map<string, T>();
-    localData.forEach(item => mergedMap.set(item.id, item));
-    cloudData.forEach(cloudItem => {
-      const localItem = mergedMap.get(cloudItem.id);
-      if (!localItem) {
-        mergedMap.set(cloudItem.id, cloudItem);
-      } else {
-        const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
-        const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
-        if (cloudDate >= localDate) mergedMap.set(cloudItem.id, cloudItem);
-      }
-    });
+    if (Array.isArray(localData)) {
+      localData.forEach(item => {
+        if (item && item.id) mergedMap.set(item.id, item);
+      });
+    }
+    if (Array.isArray(cloudData)) {
+      cloudData.forEach(cloudItem => {
+        if (!cloudItem || !cloudItem.id) return;
+        const localItem = mergedMap.get(cloudItem.id);
+        if (!localItem) {
+          mergedMap.set(cloudItem.id, cloudItem);
+        } else {
+          const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
+          const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
+          if (cloudDate >= localDate) mergedMap.set(cloudItem.id, cloudItem);
+        }
+      });
+    }
     return Array.from(mergedMap.values());
   };
 
@@ -157,7 +164,11 @@ const App: React.FC = () => {
       });
 
       setMeetings(prev => {
-        const merged = mergeData(cloudMeetings || [], prev).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+        const merged = mergeData(cloudMeetings || [], prev).sort((a, b) => {
+          const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
+          const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
+          return timeB - timeA;
+        });
         storageService.saveMeetings(merged);
         return merged;
       });

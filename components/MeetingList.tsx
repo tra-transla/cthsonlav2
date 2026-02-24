@@ -48,14 +48,21 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
   };
 
   const filteredAndSortedMeetings = useMemo(() => {
+    if (!Array.isArray(meetings)) return [];
     return [...meetings]
       .filter(m => {
+        if (!m) return false;
+        const title = m.title || '';
+        const hostUnit = m.hostUnit || '';
+        const chairPerson = m.chairPerson || '';
+
         const matchesSearch = 
-          m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          m.hostUnit.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          m.chairPerson.toLowerCase().includes(searchTerm.toLowerCase());
+          title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          hostUnit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          chairPerson.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const meetingDate = new Date(m.startTime).setHours(0, 0, 0, 0);
+        const startTime = m.startTime || new Date().toISOString();
+        const meetingDate = new Date(startTime).setHours(0, 0, 0, 0);
         const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
         const end = endDate ? new Date(endDate).setHours(0, 0, 0, 0) : null;
 
@@ -65,11 +72,16 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
         return matchesSearch && matchesStartDate && matchesEndDate;
       })
       .sort((a, b) => {
+        if (!a || !b) return 0;
         let comparison = 0;
         if (sortField === 'startTime') {
-          comparison = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+          const timeA = a.startTime ? new Date(a.startTime).getTime() : 0;
+          const timeB = b.startTime ? new Date(b.startTime).getTime() : 0;
+          comparison = timeA - timeB;
         } else {
-          comparison = (a[sortField] || '').localeCompare(b[sortField] || '', 'vi');
+          const valA = String(a[sortField] || '');
+          const valB = String(b[sortField] || '');
+          comparison = valA.localeCompare(valB, 'vi');
         }
         return sortOrder === 'asc' ? comparison : -comparison;
       });
@@ -105,9 +117,17 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
 
     const header = "Tiêu đề,Đơn vị chủ trì,Cán bộ chủ trì,Thời gian bắt đầu,Thời gian kết thúc,Số điểm cầu,Trạng thái,Giấy mời,Mô tả\n";
     const rows = filteredAndSortedMeetings.map(m => {
+      if (!m) return "";
       const status = m.status === 'CANCELLED' ? 'Đã huỷ' : m.status === 'POSTPONED' ? 'Tạm hoãn' : 'Bình thường';
-      return `"${m.title.replace(/"/g, '""')}","${m.hostUnit.replace(/"/g, '""')}","${m.chairPerson.replace(/"/g, '""')}","${new Date(m.startTime).toLocaleString('vi-VN', { hour12: false })}","${new Date(m.endTime).toLocaleString('vi-VN', { hour12: false })}","${m.endpoints.length}","${status}","${m.invitationLink || ''}","${(m.description || '').replace(/"/g, '""')}"`;
-    }).join("\n");
+      const title = (m.title || '').replace(/"/g, '""');
+      const hostUnit = (m.hostUnit || '').replace(/"/g, '""');
+      const chairPerson = (m.chairPerson || '').replace(/"/g, '""');
+      const startTime = m.startTime ? new Date(m.startTime).toLocaleString('vi-VN', { hour12: false }) : 'N/A';
+      const endTime = m.endTime ? new Date(m.endTime).toLocaleString('vi-VN', { hour12: false }) : 'N/A';
+      const epCount = Array.isArray(m.endpoints) ? m.endpoints.length : 0;
+      
+      return `"${title}","${hostUnit}","${chairPerson}","${startTime}","${endTime}","${epCount}","${status}","${m.invitationLink || ''}","${(m.description || '').replace(/"/g, '""')}"`;
+    }).filter(row => row !== "").join("\n");
     
     const csvContent = "\uFEFF" + header + rows;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });

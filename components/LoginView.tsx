@@ -72,7 +72,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
     setIsLoading(true);
     setError('');
     setTimeout(() => {
-      const foundUser = users.find(u => u.username === username && u.password === password);
+      const foundUser = (users || []).find(u => u.username === username && u.password === password);
       if (foundUser) {
         onLoginSuccess(foundUser);
       } else {
