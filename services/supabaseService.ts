@@ -349,9 +349,17 @@ export const supabaseService = {
 
   async getSettings(): Promise<SystemSettings | null> {
     if (!supabase) return null;
-    const { data, error } = await supabase.from('system_settings').select('*').single();
-    if (error) return null;
-    return mapSettings(data);
+    try {
+      const { data, error } = await supabase.from('system_settings').select('*').single();
+      if (error) {
+        console.warn("Supabase: Error fetching system_settings (might not exist yet):", error.message);
+        return null;
+      }
+      return mapSettings(data);
+    } catch (err) {
+      console.error("Supabase: Unexpected error in getSettings:", err);
+      return null;
+    }
   },
 
   async updateSettings(s: SystemSettings) {

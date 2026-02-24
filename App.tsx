@@ -71,8 +71,8 @@ const App: React.FC = () => {
       const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
       const fifteenMinsLater = new Date(now.getTime() + 15 * 60 * 1000);
 
-      const upcoming = meetings.filter(m => {
-        if (m.status === 'CANCELLED') return false;
+      const upcoming = (meetings || []).filter(m => {
+        if (!m || m.status === 'CANCELLED') return false;
         const start = new Date(m.startTime);
         return start > now && start <= oneHourLater;
       });
@@ -88,7 +88,7 @@ const App: React.FC = () => {
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('🔔 Hội nghị sắp bắt đầu!', {
             body: `${immediate.title} sẽ diễn ra lúc ${new Date(immediate.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false})}`,
-            icon: systemSettings.logoBase64 || 'https://cdn-icons-png.flaticon.com/512/3661/3661331.png'
+            icon: systemSettings?.logoBase64 || 'https://cdn-icons-png.flaticon.com/512/3661/3661331.png'
           });
         }
         
@@ -101,7 +101,7 @@ const App: React.FC = () => {
     checkMeetings();
     const interval = setInterval(checkMeetings, 60000);
     return () => clearInterval(interval);
-  }, [meetings, notifiedMeetingIds, systemSettings.logoBase64]);
+  }, [meetings, notifiedMeetingIds, systemSettings?.logoBase64]);
 
   const mergeData = <T extends { id: string, updatedAt?: string }>(cloudData: T[], localData: T[]): T[] => {
     const mergedMap = new Map<string, T>();
@@ -244,15 +244,17 @@ const App: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-    const validMeetings = meetings.filter(m => m.status !== 'CANCELLED');
+    const validMeetings = (meetings || []).filter(m => m && m.status !== 'CANCELLED');
 
-    const weeklyMeetings = validMeetings.filter(m => new Date(m.startTime) >= startOfWeek);
-    const monthlyMeetings = validMeetings.filter(m => new Date(m.startTime) >= startOfMonth);
-    const yearlyMeetings = validMeetings.filter(m => new Date(m.startTime) >= startOfYear);
+    const weeklyMeetings = validMeetings.filter(m => m && m.startTime && new Date(m.startTime) >= startOfWeek);
+    const monthlyMeetings = validMeetings.filter(m => m && m.startTime && new Date(m.startTime) >= startOfMonth);
+    const yearlyMeetings = validMeetings.filter(m => m && m.startTime && new Date(m.startTime) >= startOfYear);
 
     const unitMap: Record<string, number> = {};
     validMeetings.forEach(m => {
-      unitMap[m.hostUnit] = (unitMap[m.hostUnit] || 0) + 1;
+      if (m && m.hostUnit) {
+        unitMap[m.hostUnit] = (unitMap[m.hostUnit] || 0) + 1;
+      }
     });
 
     const unitStats = Object.entries(unitMap)
@@ -261,18 +263,19 @@ const App: React.FC = () => {
       .slice(0, 6);
 
     const topUnit = unitStats[0]?.name || "Chưa xác định";
-    const connected = endpoints.filter(e => e.status === EndpointStatus.CONNECTED).length;
-    const uptime = endpoints.length > 0 ? ((connected / endpoints.length) * 100).toFixed(1) : "0";
+    const connected = (endpoints || []).filter(e => e && e.status === EndpointStatus.CONNECTED).length;
+    const uptime = (endpoints || []).length > 0 ? ((connected / endpoints.length) * 100).toFixed(1) : "0";
 
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
       const dateStr = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-      const count = validMeetings.filter(m => new Date(m.startTime).toDateString() === d.toDateString()).length;
+      const count = validMeetings.filter(m => m && m.startTime && new Date(m.startTime).toDateString() === d.toDateString()).length;
       return { name: dateStr, count };
     });
 
     const totalDurationMs = validMeetings.reduce((acc, m) => {
+      if (!m || !m.startTime || !m.endTime) return acc;
       const start = new Date(m.startTime).getTime();
       const end = new Date(m.endTime).getTime();
       return acc + (end - start);
@@ -287,7 +290,11 @@ const App: React.FC = () => {
       : "100";
 
     const engagementScore = validMeetings.length > 0 
-      ? Math.min(100, Math.floor(validMeetings.reduce((acc, m) => acc + (m.endpoints.length * 2 + m.participants.length), 0) / validMeetings.length * 1.5))
+      ? Math.min(100, Math.floor(validMeetings.reduce((acc, m) => {
+          const epCount = Array.isArray(m?.endpoints) ? m.endpoints.length : 0;
+          const partCount = Array.isArray(m?.participants) ? m.participants.length : 0;
+          return acc + (epCount * 2 + partCount);
+        }, 0) / validMeetings.length * 1.5))
       : 0;
 
     return {
@@ -301,7 +308,7 @@ const App: React.FC = () => {
       avgDuration: avgDurationHours,
       onTimeRate: onTimeRate,
       engagementScore: engagementScore,
-      recentMeetings: [...meetings].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5)
+      recentMeetings: [...(meetings || [])].filter(m => m && m.startTime).sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5)
     };
   }, [meetings, endpoints]);
 
@@ -312,6 +319,23 @@ const App: React.FC = () => {
     setActiveTab(tab);
     setIsSidebarOpen(false);
   };
+
+  if (!hasSyncedOnce && isSyncing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white font-sans">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-500/20 rounded-full"></div>
+            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-black uppercase tracking-[0.3em] text-blue-400 mb-2">Hệ thống CTH Sơn La</p>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Đang đồng bộ dữ liệu...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleUpdateMeeting = async (meeting: Meeting) => {
     const updatedMeeting = { ...meeting, updatedAt: new Date().toISOString() };
@@ -382,8 +406,8 @@ const App: React.FC = () => {
     </>
   );
 
-  const primaryBgStyle = { backgroundColor: systemSettings.primaryColor };
-  const primaryTextStyle = { color: systemSettings.primaryColor };
+  const primaryBgStyle = { backgroundColor: systemSettings?.primaryColor || '#3B82F6' };
+  const primaryTextStyle = { color: systemSettings?.primaryColor || '#3B82F6' };
 
   return (
     <div className="min-h-screen flex bg-gray-50 overflow-hidden relative">
@@ -395,11 +419,11 @@ const App: React.FC = () => {
         <div className="p-6 flex justify-between items-center">
           <div className="flex items-center gap-3 min-w-0">
              <div className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-                {systemSettings.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
+                {systemSettings?.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
              </div>
              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings.shortName}</span>
-                <span className="text-[9px] font-bold text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser.fullName || 'User'}</span>
+                <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings?.shortName || 'HỘI NGHỊ'}</span>
+                <span className="text-[9px] font-bold text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser?.fullName || 'User'}</span>
              </div>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-white"><X size={20} /></button>
