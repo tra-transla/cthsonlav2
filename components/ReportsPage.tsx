@@ -119,30 +119,39 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
     if (!reportRef.current || isGenerating) return;
     
     setIsGenerating(true);
-    console.log("Starting PDF generation...");
     
     try {
       const element = reportRef.current;
       
       // Cấu hình html2pdf
       const opt = {
-        margin: [10, 10] as [number, number],
+        margin: 10,
         filename: `Bao_cao_Lich_Hop_${new Date().toISOString().slice(0,10)}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
-          scale: 2, // Tăng scale để PDF sắc nét hơn
+          scale: 2,
           useCORS: true, 
+          logging: false,
           letterRendering: true,
           backgroundColor: '#ffffff',
           onclone: (clonedDoc: Document) => {
-            // 1. Xử lý triệt để lỗi màu oklch/oklab của Tailwind CSS v4
-            const allElements = clonedDoc.getElementsByTagName('*');
-            for (let i = 0; i < allElements.length; i++) {
-              const el = allElements[i] as HTMLElement;
-              
+            // 1. Xử lý triệt để tất cả các thẻ style (Tailwind classes)
+            const styleTags = clonedDoc.getElementsByTagName('style');
+            for (let i = 0; i < styleTags.length; i++) {
+              const tag = styleTags[i];
+              if (tag.innerHTML.includes('oklch') || tag.innerHTML.includes('oklab')) {
+                tag.innerHTML = tag.innerHTML
+                  .replace(/oklch\s*\([^)]+\)/gi, '#1e293b')
+                  .replace(/oklab\s*\([^)]+\)/gi, '#1e293b');
+              }
+            }
+
+            // 2. Xử lý triệt để lỗi màu oklch/oklab trong inline styles và SVG
+            const allElements = clonedDoc.querySelectorAll('*');
+            allElements.forEach((el: any) => {
               // Xử lý style inline
               const inlineStyle = el.getAttribute('style');
-              if (inlineStyle && (inlineStyle.toLowerCase().includes('oklch') || inlineStyle.toLowerCase().includes('oklab'))) {
+              if (inlineStyle && (inlineStyle.includes('oklch') || inlineStyle.includes('oklab'))) {
                 el.setAttribute('style', inlineStyle
                   .replace(/oklch\s*\([^)]+\)/gi, '#1e293b')
                   .replace(/oklab\s*\([^)]+\)/gi, '#1e293b')
@@ -150,29 +159,18 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
               }
 
               // Xử lý các thuộc tính fill/stroke của SVG
-              if (el.tagName.toLowerCase() === 'svg' || el.parentElement?.tagName.toLowerCase() === 'svg') {
+              if (el instanceof SVGElement) {
                 ['fill', 'stroke'].forEach(attr => {
                   const val = el.getAttribute(attr);
-                  if (val && (val.toLowerCase().includes('oklch') || val.toLowerCase().includes('oklab'))) {
+                  if (val && (val.includes('oklch') || val.includes('oklab'))) {
                     el.setAttribute(attr, '#1e293b');
                   }
                 });
-              }
-
-              // Đảm bảo các biểu đồ Recharts hiển thị đúng font
-              if (el.tagName.toLowerCase() === 'text') {
-                el.style.fontFamily = 'Arial, sans-serif';
-              }
-            }
-
-            // 2. Xử lý triệt để tất cả các thẻ style (Tailwind classes)
-            const styleTags = Array.from(clonedDoc.getElementsByTagName('style'));
-            styleTags.forEach(tag => {
-              let css = tag.innerHTML;
-              if (css.includes('oklch') || css.includes('oklab')) {
-                tag.innerHTML = css
-                  .replace(/oklch\s*\([^)]+\)/gi, '#1e293b')
-                  .replace(/oklab\s*\([^)]+\)/gi, '#1e293b');
+                
+                // Đảm bảo các biểu đồ Recharts hiển thị đúng font
+                if (el.tagName.toLowerCase() === 'text') {
+                  el.style.fontFamily = 'Arial, sans-serif';
+                }
               }
             });
 
@@ -182,14 +180,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
               const container = pdfElements[0] as HTMLElement;
               container.style.backgroundColor = '#ffffff';
               container.style.color = '#0f172a';
+              container.style.width = '1050px'; // Ép chiều rộng cố định để khớp A4 Landscape
             }
           }
         },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'landscape' as const }
       };
 
-      await html2pdf().set(opt).from(element).save();
-      console.log("PDF generated successfully");
+      // Sử dụng chuỗi lệnh chuẩn của html2pdf.js
+      await html2pdf().from(element).set(opt).save();
     } catch (error: any) {
       console.error("PDF Generation Error:", error);
       alert("Có lỗi xảy ra khi xuất PDF. Vui lòng thử lại.");
