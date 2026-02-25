@@ -132,20 +132,15 @@ const App: React.FC = () => {
 
   const syncData = async () => {
     console.log("Starting data sync...");
-    if (!supabaseService.isConfigured()) {
-      console.log("Supabase not configured, skipping sync.");
-      setHasSyncedOnce(true);
-      return;
-    }
     setIsSyncing(true);
     try {
       // Test connection first
       const connTest = await supabaseService.testConnection();
       if (!connTest.success) {
-        console.error("Supabase Connection Error:", connTest.message);
+        console.error("Connection Error:", connTest.message);
         throw new Error(connTest.message);
       }
-      console.log("Supabase Connection Verified:", connTest.message);
+      console.log("Connection Verified:", connTest.message);
 
       const [cloudMeetings, cloudEndpoints, cloudUnits, cloudStaff, cloudGroups, cloudUsers, cloudSettings] = await Promise.all([
         supabaseService.getMeetings(),
@@ -376,13 +371,14 @@ const App: React.FC = () => {
     }
     
     // 2. Then sync to cloud
-    if (supabaseService.isConfigured()) {
-      try { 
-        await supabaseService.upsertMeeting(updatedMeeting); 
-        setLastRefreshed(new Date());
-      } catch (err: any) { 
-        console.error("Cập nhật Cloud thất bại:", err); 
-        alert(`Cập nhật lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời trên trình duyệt này.`);
+    try { 
+      await supabaseService.upsertMeeting(updatedMeeting); 
+      setLastRefreshed(new Date());
+    } catch (err: any) { 
+      console.error("Cập nhật thất bại:", err); 
+      // Only alert if we are supposed to be cloud but failed completely
+      if (supabaseService.isConfigured()) {
+        alert(`Cập nhật lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời.`);
       }
     }
   };
@@ -395,8 +391,10 @@ const App: React.FC = () => {
       return updated;
     });
     if (selectedMeeting?.id === id) setSelectedMeeting(null);
-    if (supabaseService.isConfigured()) {
-      try { await supabaseService.deleteMeeting(id); } catch (err) { console.error("Xóa thất bại:", err); }
+    try { 
+      await supabaseService.deleteMeeting(id); 
+    } catch (err) { 
+      console.error("Xóa thất bại:", err); 
     }
   };
 
@@ -405,13 +403,11 @@ const App: React.FC = () => {
     setCurrentUser(updatedUser);
     storageService.saveUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
 
-    if (supabaseService.isConfigured()) {
-      try {
-        await supabaseService.upsertUser(updatedUser);
-      } catch (err) {
-        console.error("Lỗi cập nhật mật khẩu Cloud:", err);
-        throw err;
-      }
+    try {
+      await supabaseService.upsertUser(updatedUser);
+    } catch (err) {
+      console.error("Lỗi cập nhật mật khẩu:", err);
+      if (supabaseService.isConfigured()) throw err;
     }
   };
 
@@ -486,11 +482,10 @@ const App: React.FC = () => {
                title="Nhấn để đồng bộ ngay"
              >
                 <div className={`w-2 h-2 rounded-full ${
-                  !supabaseService.isConfigured() ? 'bg-red-500' :
                   isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'
                 }`}></div>
-                <span className={`text-[10px] font-black uppercase tracking-widest ${!supabaseService.isConfigured() ? 'text-red-600' : 'text-slate-500'}`}>
-                  {!supabaseService.isConfigured() ? 'Local Only' : (isSyncing ? 'Đang đồng bộ...' : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`)}
+                <span className={`text-[10px] font-black uppercase tracking-widest ${!supabaseService.isConfigured() ? 'text-blue-600' : 'text-slate-500'}`}>
+                  {isSyncing ? 'Đang đồng bộ...' : (supabaseService.isLocal() ? `Server Connected: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}` : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`)}
                 </span>
              </div>
           </div>
@@ -671,76 +666,74 @@ const App: React.FC = () => {
               onSelect={setSelectedMeeting} 
               isAdmin={canManageMeetings} 
               onEdit={m => { setEditingMeeting(m); setIsCreateModalOpen(true); }} 
-              onDelete={isAdmin ? handleDeleteMeeting : undefined} 
+              onDelete={canManageMeetings ? handleDeleteMeeting : undefined} 
               onAdd={() => { setEditingMeeting(null); setIsCreateModalOpen(true); }} 
               onUpdate={handleUpdateMeeting} 
             />
           )}
           {activeTab === 'monitoring' && isAdmin && <MonitoringGrid endpoints={endpoints} onUpdateEndpoint={async (e) => {
-              if (supabaseService.isConfigured()) await supabaseService.upsertEndpoint(e);
+              await supabaseService.upsertEndpoint(e);
               setEndpoints(prev => prev.map(item => item.id === e.id ? e : item));
           }} />}
           {activeTab === 'management' && <ManagementPage 
               units={units} staff={staff} participantGroups={groups} endpoints={endpoints} systemSettings={systemSettings} 
               onAddUnit={async u => { 
                 const newUnit = { ...u, id: `U${Date.now()}` };
-                if (supabaseService.isConfigured()) await supabaseService.upsertUnit(newUnit);
+                await supabaseService.upsertUnit(newUnit);
                 setUnits(prev => [...prev, newUnit]);
               }} 
               onUpdateUnit={async u => { 
-                if (supabaseService.isConfigured()) await supabaseService.upsertUnit(u);
+                await supabaseService.upsertUnit(u);
                 setUnits(prev => prev.map(item => item.id === u.id ? u : item));
               }} 
               onDeleteUnit={async id => { 
-                if (supabaseService.isConfigured()) await supabaseService.deleteUnit(id);
+                await supabaseService.deleteUnit(id);
                 setUnits(prev => prev.filter(u => u.id !== id));
               }}
               onAddStaff={async s => { 
                 const newStaff = { ...s, id: `S${Date.now()}` };
-                if (supabaseService.isConfigured()) await supabaseService.upsertStaff(newStaff);
+                await supabaseService.upsertStaff(newStaff);
                 setStaff(prev => [...prev, newStaff]);
               }}
               onUpdateStaff={async s => { 
-                if (supabaseService.isConfigured()) await supabaseService.upsertStaff(s);
+                await supabaseService.upsertStaff(s);
                 setStaff(prev => prev.map(item => item.id === s.id ? s : item));
-              }}
+              }} 
               onDeleteStaff={async id => { 
-                if (supabaseService.isConfigured()) await supabaseService.deleteStaff(id);
+                await supabaseService.deleteStaff(id);
                 setStaff(prev => prev.filter(s => s.id !== id));
               }}
               onAddGroup={async g => { 
                 const newGroup = { ...g, id: `G${Date.now()}` };
-                if (supabaseService.isConfigured()) await supabaseService.upsertGroup(newGroup);
+                await supabaseService.upsertGroup(newGroup);
                 setGroups(prev => [newGroup, ...prev]);
               }}
               onUpdateGroup={async g => { 
-                if (supabaseService.isConfigured()) await supabaseService.upsertGroup(g);
+                await supabaseService.upsertGroup(g);
                 setGroups(prev => prev.map(item => item.id === g.id ? g : item));
-              }}
+              }} 
               onDeleteGroup={async id => { 
-                if (supabaseService.isConfigured()) await supabaseService.deleteGroup(id);
+                await supabaseService.deleteGroup(id);
                 setGroups(prev => prev.filter(g => g.id !== id));
               }}
               onAddEndpoint={async e => { 
                 const newEp = { ...e, id: `${Date.now()}`, status: EndpointStatus.DISCONNECTED, lastConnected: 'N/A' };
-                if (supabaseService.isConfigured()) await supabaseService.upsertEndpoint(newEp);
+                await supabaseService.upsertEndpoint(newEp);
                 setEndpoints(prev => [...prev, newEp]);
               }}
               onUpdateEndpoint={async (e) => {
-                if (supabaseService.isConfigured()) await supabaseService.upsertEndpoint(e);
+                await supabaseService.upsertEndpoint(e);
                 setEndpoints(prev => prev.map(item => item.id === e.id ? e : item));
               }}
               onDeleteEndpoint={async id => { 
-                if (supabaseService.isConfigured()) await supabaseService.deleteEndpoint(id);
+                await supabaseService.deleteEndpoint(id);
                 setEndpoints(prev => prev.filter(e => e.id !== id));
               }}
               onUpdateSettings={async s => {
-                if (supabaseService.isConfigured()) {
-                  try {
-                    await supabaseService.updateSettings(s);
-                  } catch (err) {
-                    console.error("Lỗi cập nhật cấu hình lên Cloud:", err);
-                  }
+                try {
+                  await supabaseService.updateSettings(s);
+                } catch (err) {
+                  console.error("Lỗi cập nhật cấu hình:", err);
                 }
                 setSystemSettings(s);
                 storageService.saveSystemSettings(s);
@@ -748,13 +741,13 @@ const App: React.FC = () => {
           />}
           {activeTab === 'accounts' && <UserManagement users={users} currentUser={currentUser!} onAddUser={async u => {
               const newUser = { ...u, id: `${Date.now()}` };
-              if (supabaseService.isConfigured()) await supabaseService.upsertUser(newUser);
+              await supabaseService.upsertUser(newUser);
               setUsers(prev => [...prev, newUser]);
           }} onUpdateUser={async u => {
-              if (supabaseService.isConfigured()) await supabaseService.upsertUser(u);
+              await supabaseService.upsertUser(u);
               setUsers(prev => prev.map(item => item.id === u.id ? u : item));
           }} onDeleteUser={async id => {
-              if (supabaseService.isConfigured()) await supabaseService.deleteUser(id);
+              await supabaseService.deleteUser(id);
               setUsers(prev => prev.filter(u => u.id !== id));
           }} />}
           {activeTab === 'deployment' && <ExportPage />}
@@ -790,13 +783,13 @@ const App: React.FC = () => {
         });
         
         // 2. Sync to cloud
-        if (supabaseService.isConfigured()) {
-          try {
-            await supabaseService.upsertMeeting(newMeeting);
-            setLastRefreshed(new Date());
-          } catch (err: any) {
-            console.error("Lưu Cloud thất bại:", err);
-            alert(`Lưu lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời trên trình duyệt này.`);
+        try {
+          await supabaseService.upsertMeeting(newMeeting);
+          setLastRefreshed(new Date());
+        } catch (err: any) {
+          console.error("Lưu thất bại:", err);
+          if (supabaseService.isConfigured()) {
+            alert(`Lưu lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời.`);
           }
         }
         

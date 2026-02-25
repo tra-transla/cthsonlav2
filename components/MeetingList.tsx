@@ -384,42 +384,58 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                         <ExternalLink size={14} strokeWidth={3} />
                       </button>
 
-                      {isAdmin && (
+                      {(isAdmin || onDelete) && (
                         <div className="flex items-center gap-1.5 border-l border-gray-100 pl-1.5">
                           <button 
-                            onClick={(e) => { e.stopPropagation(); onEdit?.(meeting); }}
-                            className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                            onClick={(e) => { 
+                              e.preventDefault();
+                              e.stopPropagation(); 
+                              onEdit?.(meeting); 
+                            }}
+                            className="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 shadow-sm disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed active:scale-90"
                             title="Chỉnh sửa"
                             disabled={isSpecial}
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                           </button>
                           
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActionMeeting({ meeting, type: 'POSTPONE' }); }}
-                            className="p-2 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl transition-all border border-amber-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                            onClick={(e) => { 
+                              e.preventDefault();
+                              e.stopPropagation(); 
+                              setActionMeeting({ meeting, type: 'POSTPONE' }); 
+                            }}
+                            className="p-2.5 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl transition-all border border-amber-100 shadow-sm disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed active:scale-90"
                             title="Hoãn lịch họp"
                             disabled={isSpecial}
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </button>
 
                           <button 
-                            onClick={(e) => { e.stopPropagation(); setActionMeeting({ meeting, type: 'CANCEL' }); }}
-                            className="p-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                            onClick={(e) => { 
+                              e.preventDefault();
+                              e.stopPropagation(); 
+                              setActionMeeting({ meeting, type: 'CANCEL' }); 
+                            }}
+                            className="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 shadow-sm disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed active:scale-90"
                             title="Huỷ lịch họp"
                             disabled={isSpecial}
                           >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                           </button>
 
                           {onDelete && (
                             <button 
-                              onClick={(e) => { e.stopPropagation(); onDelete(meeting.id); }}
-                              className="p-2 bg-slate-100 text-slate-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-slate-200"
+                              onClick={(e) => { 
+                                e.preventDefault();
+                                e.stopPropagation(); 
+                                onDelete(meeting.id); 
+                              }}
+                              className="p-2.5 bg-slate-100 text-slate-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-slate-200 shadow-sm active:scale-90"
                               title="Xóa vĩnh viễn"
                             >
-                              <Trash2 size={14} />
+                              <Trash2 size={16} strokeWidth={2.5} />
                             </button>
                           )}
                         </div>

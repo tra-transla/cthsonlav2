@@ -1,6 +1,5 @@
 
 import { Meeting, Unit, Staff, ParticipantGroup, User, Endpoint, SavedReportConfig, SystemSettings } from '../types';
-import { MOCK_MEETINGS, MOCK_UNITS, MOCK_STAFF, MOCK_PARTICIPANT_GROUPS, MOCK_USERS, MOCK_ENDPOINTS } from '../constants';
 
 const DB_KEYS = {
   MEETINGS: 'cth_sla_meetings',
@@ -27,22 +26,22 @@ export const storageService = {
     }
     try {
       if (!localStorage.getItem(DB_KEYS.UNITS)) {
-        localStorage.setItem(DB_KEYS.UNITS, JSON.stringify(MOCK_UNITS));
+        localStorage.setItem(DB_KEYS.UNITS, JSON.stringify([]));
       }
       if (!localStorage.getItem(DB_KEYS.STAFF)) {
-        localStorage.setItem(DB_KEYS.STAFF, JSON.stringify(MOCK_STAFF));
+        localStorage.setItem(DB_KEYS.STAFF, JSON.stringify([]));
       }
       if (!localStorage.getItem(DB_KEYS.GROUPS)) {
-        localStorage.setItem(DB_KEYS.GROUPS, JSON.stringify(MOCK_PARTICIPANT_GROUPS));
+        localStorage.setItem(DB_KEYS.GROUPS, JSON.stringify([]));
       }
       if (!localStorage.getItem(DB_KEYS.USERS)) {
-        localStorage.setItem(DB_KEYS.USERS, JSON.stringify(MOCK_USERS));
+        localStorage.setItem(DB_KEYS.USERS, JSON.stringify([]));
       }
       if (!localStorage.getItem(DB_KEYS.MEETINGS)) {
-        localStorage.setItem(DB_KEYS.MEETINGS, JSON.stringify(MOCK_MEETINGS));
+        localStorage.setItem(DB_KEYS.MEETINGS, JSON.stringify([]));
       }
       if (!localStorage.getItem(DB_KEYS.ENDPOINTS)) {
-        localStorage.setItem(DB_KEYS.ENDPOINTS, JSON.stringify(MOCK_ENDPOINTS));
+        localStorage.setItem(DB_KEYS.ENDPOINTS, JSON.stringify([]));
       }
       if (!localStorage.getItem(DB_KEYS.SAVED_REPORTS)) {
         localStorage.setItem(DB_KEYS.SAVED_REPORTS, JSON.stringify([]));
@@ -76,38 +75,38 @@ export const storageService = {
   },
 
   getMeetings(): Meeting[] { 
-    const data = this.getData(DB_KEYS.MEETINGS, MOCK_MEETINGS); 
-    return Array.isArray(data) ? data : MOCK_MEETINGS;
+    const data = this.getData(DB_KEYS.MEETINGS, []); 
+    return Array.isArray(data) ? data : [];
   },
   saveMeetings(data: Meeting[]) { this.saveData(DB_KEYS.MEETINGS, data); },
 
   getUnits(): Unit[] { 
-    const data = this.getData(DB_KEYS.UNITS, MOCK_UNITS); 
-    return Array.isArray(data) ? data : MOCK_UNITS;
+    const data = this.getData(DB_KEYS.UNITS, []); 
+    return Array.isArray(data) ? data : [];
   },
   saveUnits(data: Unit[]) { this.saveData(DB_KEYS.UNITS, data); },
 
   getStaff(): Staff[] { 
-    const data = this.getData(DB_KEYS.STAFF, MOCK_STAFF); 
-    return Array.isArray(data) ? data : MOCK_STAFF;
+    const data = this.getData(DB_KEYS.STAFF, []); 
+    return Array.isArray(data) ? data : [];
   },
   saveStaff(data: Staff[]) { this.saveData(DB_KEYS.STAFF, data); },
 
   getGroups(): ParticipantGroup[] { 
-    const data = this.getData(DB_KEYS.GROUPS, MOCK_PARTICIPANT_GROUPS); 
-    return Array.isArray(data) ? data : MOCK_PARTICIPANT_GROUPS;
+    const data = this.getData(DB_KEYS.GROUPS, []); 
+    return Array.isArray(data) ? data : [];
   },
   saveGroups(data: ParticipantGroup[]) { this.saveData(DB_KEYS.GROUPS, data); },
 
   getUsers(): User[] { 
-    const data = this.getData(DB_KEYS.USERS, MOCK_USERS); 
-    return Array.isArray(data) ? data : MOCK_USERS;
+    const data = this.getData(DB_KEYS.USERS, []); 
+    return Array.isArray(data) ? data : [];
   },
   saveUsers(data: User[]) { this.saveData(DB_KEYS.USERS, data); },
 
   getEndpoints(): Endpoint[] { 
-    const data = this.getData(DB_KEYS.ENDPOINTS, MOCK_ENDPOINTS); 
-    return Array.isArray(data) ? data : MOCK_ENDPOINTS;
+    const data = this.getData(DB_KEYS.ENDPOINTS, []); 
+    return Array.isArray(data) ? data : [];
   },
   saveEndpoints(data: Endpoint[]) { this.saveData(DB_KEYS.ENDPOINTS, data); },
 
