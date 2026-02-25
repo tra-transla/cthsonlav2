@@ -7,7 +7,7 @@ import {
 import { Meeting, Endpoint, User } from '../types';
 // @ts-ignore
 import html2pdf from 'html2pdf.js';
-import { Calendar, Building2, CheckCircle, AlertTriangle, FileText, Download, TrendingUp, Users, Clock, Hash } from 'lucide-react';
+import { Calendar, Building2, CheckCircle, AlertTriangle, FileText, Download, TrendingUp, Users, Clock, Hash, Eye, Printer, X } from 'lucide-react';
 
 interface ReportsPageProps {
   meetings: Meeting[];
@@ -28,6 +28,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
   const [endDate, setEndDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [groupBy, setGroupBy] = useState<GroupByOption>('month');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   
   const reportRef = useRef<HTMLDivElement>(null);
 
@@ -123,58 +124,85 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
     try {
       const element = reportRef.current;
       
-      // Đợi một chút để đảm bảo UI đã ổn định
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      // Cấu hình html2pdf
       const opt = {
-        margin: 10,
-        filename: `Bao_cao_CTH_Son_La_${new Date().toISOString().slice(0,10)}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.95 },
+        margin: [10, 10] as [number, number],
+        filename: `Bao_cao_Lich_Hop_${new Date().toISOString().slice(0,10)}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
-          scale: 1, 
+          scale: 2, // Tăng scale để PDF sắc nét hơn
           useCORS: true, 
-          logging: false,
+          letterRendering: true,
           backgroundColor: '#ffffff',
-          scrollY: 0,
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight,
           onclone: (clonedDoc: Document) => {
-            // Failsafe: Tìm và thay thế tất cả oklch bằng hex cơ bản trong tài liệu đã clone
-            const elements = clonedDoc.getElementsByClassName('pdf-safe');
-            if (elements.length > 0) {
-              const container = elements[0] as HTMLElement;
+            // 1. Xử lý triệt để lỗi màu oklch/oklab của Tailwind CSS v4
+            const allElements = clonedDoc.getElementsByTagName('*');
+            for (let i = 0; i < allElements.length; i++) {
+              const el = allElements[i] as HTMLElement;
+              
+              // Xử lý style inline
+              const inlineStyle = el.getAttribute('style');
+              if (inlineStyle && (inlineStyle.toLowerCase().includes('oklch') || inlineStyle.toLowerCase().includes('oklab'))) {
+                el.setAttribute('style', inlineStyle
+                  .replace(/oklch\s*\([^)]+\)/gi, '#1e293b')
+                  .replace(/oklab\s*\([^)]+\)/gi, '#1e293b')
+                );
+              }
+
+              // Xử lý các thuộc tính fill/stroke của SVG
+              if (el.tagName.toLowerCase() === 'svg' || el.parentElement?.tagName.toLowerCase() === 'svg') {
+                ['fill', 'stroke'].forEach(attr => {
+                  const val = el.getAttribute(attr);
+                  if (val && (val.toLowerCase().includes('oklch') || val.toLowerCase().includes('oklab'))) {
+                    el.setAttribute(attr, '#1e293b');
+                  }
+                });
+              }
+
+              // Đảm bảo các biểu đồ Recharts hiển thị đúng font
+              if (el.tagName.toLowerCase() === 'text') {
+                el.style.fontFamily = 'Arial, sans-serif';
+              }
+            }
+
+            // 2. Xử lý triệt để tất cả các thẻ style (Tailwind classes)
+            const styleTags = Array.from(clonedDoc.getElementsByTagName('style'));
+            styleTags.forEach(tag => {
+              let css = tag.innerHTML;
+              if (css.includes('oklch') || css.includes('oklab')) {
+                tag.innerHTML = css
+                  .replace(/oklch\s*\([^)]+\)/gi, '#1e293b')
+                  .replace(/oklab\s*\([^)]+\)/gi, '#1e293b');
+              }
+            });
+
+            // 3. Ép kiểu cho container chính
+            const pdfElements = clonedDoc.getElementsByClassName('pdf-safe');
+            if (pdfElements.length > 0) {
+              const container = pdfElements[0] as HTMLElement;
               container.style.backgroundColor = '#ffffff';
               container.style.color = '#0f172a';
-              
-              // Duyệt qua tất cả các phần tử con và xóa bỏ các style có chứa oklch nếu có
-              const allElements = container.getElementsByTagName('*');
-              for (let i = 0; i < allElements.length; i++) {
-                const el = allElements[i] as HTMLElement;
-                if (el.style) {
-                  // Nếu style inline có chứa oklch, xóa nó đi để html2canvas không bị lỗi
-                  if (el.getAttribute('style')?.includes('oklch')) {
-                    el.removeAttribute('style');
-                  }
-                }
-              }
             }
           }
         },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'landscape' as const }
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       };
-      
-      // Sử dụng API worker của html2pdf để kiểm soát tốt hơn
-      const worker = html2pdf().set(opt).from(element);
-      await worker.save();
-      
+
+      await html2pdf().set(opt).from(element).save();
       console.log("PDF generated successfully");
     } catch (error: any) {
-      console.error("PDF Generation Error Details:", error);
-      const errorMsg = error?.message || (typeof error === 'string' ? error : "Lỗi không xác định");
-      alert(`Không thể tạo PDF: ${errorMsg}\n\nGợi ý: Bạn có thể thử chụp ảnh màn hình hoặc in trang web (Ctrl+P) nếu cần gấp.`);
+      console.error("PDF Generation Error:", error);
+      alert("Có lỗi xảy ra khi xuất PDF. Vui lòng thử lại.");
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handlePrint = () => {
+    // Để in tốt nhất, chúng ta nên in phần tử reportRef
+    // Tuy nhiên window.print() in toàn bộ trang. 
+    // Chúng ta đã có CSS @media print để ẩn các phần không cần thiết.
+    window.print();
   };
 
   return (
@@ -215,6 +243,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
               </select>
             </div>
             <button 
+              onClick={() => setShowPreview(true)}
+              className="px-6 py-2.5 bg-blue-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-blue-500 transition-all flex items-center gap-2"
+            >
+              <Eye size={16} />
+              Xem trước
+            </button>
+            <button 
               onClick={downloadPDF} 
               disabled={isGenerating}
               className={`px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl transition-all flex items-center gap-2 ${
@@ -237,210 +272,266 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
         </div>
       </div>
 
-      {/* Report Document Content */}
-      <div ref={reportRef} className="bg-white rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 min-h-[1000px] pdf-safe">
-        {/* Header */}
-        <div className="border-b-2 border-slate-900 pb-8 flex justify-between items-end">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Báo cáo Thống kê Hội nghị</h1>
-            <p className="text-sm font-bold text-blue-600 uppercase tracking-[0.1em]">Hệ thống Quản lý & Giám sát Cầu truyền hình tỉnh Sơn La</p>
-          </div>
-          <div className="text-right text-[10px] font-bold text-slate-400 uppercase space-y-1">
-            <p>Thời gian báo cáo: {new Date(startDate).toLocaleDateString('vi-VN')} - {new Date(endDate).toLocaleDateString('vi-VN')}</p>
-            <p>Ngày trích xuất: {new Date().toLocaleString('vi-VN')}</p>
-          </div>
-        </div>
-
-        {/* Quick Stats Summary Area */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="p-5 bg-blue-50 border border-blue-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-blue-600 mb-2">
-              <Calendar size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Tổng cuộc họp</span>
-            </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.total}</p>
-          </div>
-          <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-emerald-600 mb-2">
-              <CheckCircle size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Đã thực hiện</span>
-            </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.scheduled}</p>
-          </div>
-          <div className="p-5 bg-amber-50 border border-amber-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-amber-600 mb-2">
-              <AlertTriangle size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Tạm hoãn</span>
-            </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.postponed}</p>
-          </div>
-          <div className="p-5 bg-red-50 border border-red-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-red-600 mb-2">
-              <Building2 size={18} />
-              <span className="text-[10px] font-black uppercase tracking-widest">Số đơn vị</span>
-            </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.uniqueUnits}</p>
-          </div>
-        </div>
-
-        {/* Thống kê Tổng hợp (Tuần, Tháng, Năm) */}
-        <div className="bg-slate-900 p-8 rounded-[2rem] text-white">
-          <div className="flex items-center gap-3 mb-6">
-            <TrendingUp className="text-blue-400" />
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/60">Thống kê theo chu kỳ (Toàn hệ thống)</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-8">
-            <div className="space-y-2">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Cuộc họp Tuần này</p>
-               <div className="flex items-baseline gap-2">
-                 <span className="text-4xl font-black text-blue-400">{reportStats.currentWeekCount}</span>
-                 <span className="text-[10px] font-bold text-white/20 uppercase">Hội nghị</span>
-               </div>
-            </div>
-            <div className="space-y-2 border-l border-white/10 pl-8">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Cuộc họp Tháng này</p>
-               <div className="flex items-baseline gap-2">
-                 <span className="text-4xl font-black text-emerald-400">{reportStats.currentMonthCount}</span>
-                 <span className="text-[10px] font-bold text-white/20 uppercase">Hội nghị</span>
-               </div>
-            </div>
-            <div className="space-y-2 border-l border-white/10 pl-8">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Cuộc họp Năm nay</p>
-               <div className="flex items-baseline gap-2">
-                 <span className="text-4xl font-black text-amber-400">{reportStats.currentYearCount}</span>
-                 <span className="text-[10px] font-bold text-white/20 uppercase">Hội nghị</span>
-               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 gap-10">
-          <div className="space-y-4">
-             <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
-               <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
-               Biểu đồ phân bổ cuộc họp ({groupBy === 'unit' ? 'Theo đơn vị' : 'Theo thời gian'})
-             </h3>
-             <div className="h-[350px] w-full bg-slate-50/30 p-6 rounded-[2rem] border border-slate-100">
-               <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={statsData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                   <XAxis 
-                     dataKey="name" 
-                     fontSize={9} 
-                     fontWeight="bold" 
-                     tick={{fill: '#64748B'}} 
-                     interval={0}
-                     angle={groupBy === 'unit' ? -15 : 0}
-                     textAnchor={groupBy === 'unit' ? 'end' : 'middle'}
-                   />
-                   <YAxis fontSize={9} fontWeight="bold" tick={{fill: '#64748B'}} />
-                   <Tooltip cursor={{fill: '#F1F5F9'}} />
-                   <Bar dataKey="value" name="Số cuộc họp" fill="#3B82F6" radius={[6, 6, 0, 0]} barSize={groupBy === 'unit' ? 30 : 50}>
-                     {statsData.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                     <LabelList dataKey="value" position="top" style={{ fill: '#1E293B', fontSize: '11px', fontWeight: '900' }} />
-                   </Bar>
-                 </BarChart>
-               </ResponsiveContainer>
-             </div>
-          </div>
-        </div>
-
-        {/* Table Summary */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
-            <div className="w-1 h-4 bg-amber-500 rounded-full"></div>
-            Bảng tổng hợp dữ liệu (Theo {groupBy})
-          </h3>
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
-                <tr>
-                  <th className="px-6 py-4">Tiêu chí phân nhóm</th>
-                  <th className="px-6 py-4 text-center">Số lượng hội nghị</th>
-                  <th className="px-6 py-4 text-right">Tỷ lệ đóng góp</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {statsData.map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-3.5 font-bold text-slate-700">{row.name}</td>
-                    <td className="px-6 py-3.5 text-center font-black text-blue-600 text-base">{row.value}</td>
-                    <td className="px-6 py-3.5 text-right font-bold text-slate-400">{((row.value / reportStats.total) * 100).toFixed(1)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Detailed List */}
-        <div className="space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
-            <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
-            Thông tin chi tiết các cuộc họp
-          </h3>
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
-            <table className="w-full text-left text-[11px]">
-              <thead className="bg-slate-50 text-slate-500 text-[9px] uppercase font-black tracking-widest">
-                <tr>
-                  <th className="px-4 py-3"><div className="flex items-center gap-1"><FileText size={10} /> Tên hội nghị</div></th>
-                  <th className="px-4 py-3"><div className="flex items-center gap-1"><Building2 size={10} /> Đơn vị chủ trì</div></th>
-                  <th className="px-4 py-3"><div className="flex items-center gap-1"><Clock size={10} /> Thời gian</div></th>
-                  <th className="px-4 py-3 text-center"><div className="flex justify-center items-center gap-1"><Hash size={10} /> Điểm cầu</div></th>
-                  <th className="px-4 py-3 text-center"><div className="flex justify-center items-center gap-1"><Users size={10} /> Thành phần</div></th>
-                  <th className="px-4 py-3 text-right">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filteredMeetings.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-bold text-slate-900 max-w-[200px] leading-tight">
-                      <div className={m.status === 'CANCELLED' ? 'line-through opacity-50' : ''}>{m.title}</div>
-                      {m.cancelReason && <div className="text-[9px] font-medium text-red-500 mt-1 italic">Lý do: {m.cancelReason}</div>}
-                    </td>
-                    <td className="px-4 py-3 font-medium text-slate-600">{m.hostUnit}</td>
-                    <td className="px-4 py-3 text-slate-500 font-bold whitespace-nowrap">
-                      {new Date(m.startTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black">{Array.isArray(m.endpoints) ? m.endpoints.length : 0}</span>
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-black">{Array.isArray(m.participants) ? m.participants.length : 0}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      {m.status === 'CANCELLED' ? (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[8px] font-black uppercase rounded">Đã huỷ</span>
-                      ) : m.status === 'POSTPONED' ? (
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-600 text-[8px] font-black uppercase rounded">Hoãn</span>
-                      ) : (
-                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase rounded">Hợp lệ</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Footer Signature */}
-        <div className="pt-20 flex justify-between border-t border-slate-100">
-           <div className="max-w-xs space-y-2">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ghi chú hệ thống</p>
-              <p className="text-[9px] italic text-slate-400 leading-relaxed font-medium">Báo cáo được khởi tạo tự động. Các dữ liệu về thời gian và đơn vị được ghi nhận tại thời điểm kết thúc hội nghị.</p>
-           </div>
-           <div className="text-center w-60 space-y-20">
-              <div className="space-y-1">
-                 <p className="font-black text-[10px] uppercase tracking-widest text-slate-900">Người lập báo cáo</p>
-                 <p className="text-[9px] text-slate-400 font-bold">(Ký và ghi rõ họ tên)</p>
+      {/* Preview Modal */}
+      {showPreview && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-10 no-print">
+          <div className="bg-white w-full max-w-6xl h-full rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in duration-300">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
+                  <Eye size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black uppercase tracking-tighter text-slate-900">Xem trước Báo cáo</h3>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kiểm tra định dạng trước khi xuất bản</p>
+                </div>
               </div>
-              <p className="font-black text-xs uppercase text-slate-900 italic">
-                 {currentUser?.fullName || 'Quản trị viên hệ thống'}
-              </p>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={handlePrint}
+                  className="px-5 py-2.5 bg-white border border-gray-200 text-slate-700 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all flex items-center gap-2 shadow-sm"
+                >
+                  <Printer size={16} />
+                  In báo cáo
+                </button>
+                <button 
+                  onClick={downloadPDF}
+                  disabled={isGenerating}
+                  className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2 shadow-xl"
+                >
+                  {isGenerating ? (
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  ) : (
+                    <Download size={16} />
+                  )}
+                  Tải PDF
+                </button>
+                <button 
+                  onClick={() => setShowPreview(false)}
+                  className="p-2.5 bg-gray-100 text-gray-500 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal Content - Scrollable Preview */}
+            <div className="flex-1 overflow-y-auto p-8 bg-gray-200/50 custom-scrollbar">
+              <div className="max-w-[1100px] mx-auto shadow-2xl origin-top scale-[0.85] lg:scale-100 transition-transform">
+                {/* We render the same content as reportRef here, but without the ref to avoid conflicts if needed, 
+                    or we can just let it be. Actually, we want the preview to look exactly like the PDF. */}
+                <ReportContent 
+                  reportStats={reportStats} 
+                  startDate={startDate} 
+                  endDate={endDate} 
+                  groupBy={groupBy} 
+                  statsData={statsData} 
+                  filteredMeetings={filteredMeetings} 
+                  currentUser={currentUser} 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Page Report Content (Hidden from print if needed, but usually we want it visible) */}
+      <div ref={reportRef} className="no-print">
+        <ReportContent 
+          reportStats={reportStats} 
+          startDate={startDate} 
+          endDate={endDate} 
+          groupBy={groupBy} 
+          statsData={statsData} 
+          filteredMeetings={filteredMeetings} 
+          currentUser={currentUser} 
+        />
+      </div>
+    </div>
+  );
+};
+
+// Sub-component for the actual report content to keep it DRY
+const ReportContent: React.FC<{
+  reportStats: any;
+  startDate: string;
+  endDate: string;
+  groupBy: string;
+  statsData: any[];
+  filteredMeetings: Meeting[];
+  currentUser?: User | null;
+}> = ({ reportStats, startDate, endDate, groupBy, statsData, filteredMeetings, currentUser }) => {
+  return (
+    <div className="bg-white rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 min-h-[1000px] pdf-safe text-slate-900 pdf-report-content w-full max-w-[1100px] mx-auto">
+      {/* Header */}
+      <div className="text-center mb-8 border-b-2 border-slate-900 pb-8">
+        <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Báo cáo Thống kê Hội nghị</h1>
+        <p className="text-sm font-bold text-blue-600 uppercase tracking-[0.1em] mt-2">Hệ thống Quản lý & Giám sát Cầu truyền hình tỉnh Sơn La</p>
+        <div className="flex justify-center gap-6 mt-4 text-[10px] font-bold text-slate-400 uppercase">
+          <p>Thời gian: {new Date(startDate).toLocaleDateString('vi-VN')} - {new Date(endDate).toLocaleDateString('vi-VN')}</p>
+          <p>Ngày trích xuất: {new Date().toLocaleString('vi-VN')}</p>
+        </div>
+      </div>
+
+      {/* Quick Stats Summary Area */}
+      <div className="grid grid-cols-4 gap-4">
+        <div className="p-5 bg-blue-50 border border-blue-100 rounded-[1.5rem]">
+          <div className="flex items-center gap-3 text-blue-600 mb-2">
+            <Calendar size={18} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Tổng cuộc họp</span>
+          </div>
+          <p className="text-3xl font-black text-slate-900">{reportStats.total}</p>
+        </div>
+        <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-[1.5rem]">
+          <div className="flex items-center gap-3 text-emerald-600 mb-2">
+            <CheckCircle size={18} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Đã thực hiện</span>
+          </div>
+          <p className="text-3xl font-black text-slate-900">{reportStats.scheduled}</p>
+        </div>
+        <div className="p-5 bg-amber-50 border border-amber-100 rounded-[1.5rem]">
+          <div className="flex items-center gap-3 text-amber-600 mb-2">
+            <AlertTriangle size={18} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Tạm hoãn</span>
+          </div>
+          <p className="text-3xl font-black text-slate-900">{reportStats.postponed}</p>
+        </div>
+        <div className="p-5 bg-red-50 border border-red-100 rounded-[1.5rem]">
+          <div className="flex items-center gap-3 text-red-600 mb-2">
+            <Building2 size={18} />
+            <span className="text-[10px] font-black uppercase tracking-widest">Số đơn vị</span>
+          </div>
+          <p className="text-3xl font-black text-slate-900">{reportStats.uniqueUnits}</p>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 gap-10">
+        <div className="space-y-4">
+           <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+             <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
+             Biểu đồ phân bổ cuộc họp ({groupBy === 'unit' ? 'Theo đơn vị' : 'Theo thời gian'})
+           </h3>
+           <div className="h-[350px] w-full bg-slate-50/30 p-6 rounded-[2rem] border border-slate-100">
+             <ResponsiveContainer width="100%" height="100%">
+               <BarChart data={statsData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                 <XAxis 
+                   dataKey="name" 
+                   fontSize={9} 
+                   fontWeight="bold" 
+                   tick={{fill: '#64748B'}} 
+                   interval={0}
+                   angle={groupBy === 'unit' ? -15 : 0}
+                   textAnchor={groupBy === 'unit' ? 'end' : 'middle'}
+                 />
+                 <YAxis fontSize={9} fontWeight="bold" tick={{fill: '#64748B'}} />
+                 <Tooltip cursor={{fill: '#F1F5F9'}} />
+                 <Bar dataKey="value" name="Số cuộc họp" fill="#3B82F6" radius={[6, 6, 0, 0]} barSize={groupBy === 'unit' ? 30 : 50}>
+                   {statsData.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                   <LabelList dataKey="value" position="top" style={{ fill: '#1E293B', fontSize: '11px', fontWeight: '900' }} />
+                 </Bar>
+               </BarChart>
+             </ResponsiveContainer>
            </div>
         </div>
+      </div>
+
+      {/* Table Summary */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+          <div className="w-1 h-4 bg-amber-500 rounded-full"></div>
+          Bảng tổng hợp dữ liệu (Theo {groupBy})
+        </h3>
+        <div className="border border-slate-100 rounded-2xl overflow-hidden">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
+              <tr>
+                <th className="px-6 py-4">Tiêu chí phân nhóm</th>
+                <th className="px-6 py-4 text-center">Số lượng hội nghị</th>
+                <th className="px-6 py-4 text-right">Tỷ lệ đóng góp</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {statsData.map((row, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-6 py-3.5 font-bold text-slate-700">{row.name}</td>
+                  <td className="px-6 py-3.5 text-center font-black text-blue-600 text-base">{row.value}</td>
+                  <td className="px-6 py-3.5 text-right font-bold text-slate-400">{((row.value / reportStats.total) * 100).toFixed(1)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Detailed List */}
+      <div className="space-y-4">
+        <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+          <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
+          Thông tin chi tiết các cuộc họp
+        </h3>
+        <div className="border border-slate-100 rounded-2xl overflow-hidden">
+          <table className="w-full text-left text-[11px]">
+            <thead className="bg-slate-50 text-slate-500 text-[9px] uppercase font-black tracking-widest">
+              <tr>
+                <th className="px-4 py-3"><div className="flex items-center gap-1"><FileText size={10} /> Tên hội nghị</div></th>
+                <th className="px-4 py-3"><div className="flex items-center gap-1"><Building2 size={10} /> Đơn vị chủ trì</div></th>
+                <th className="px-4 py-3"><div className="flex items-center gap-1"><Clock size={10} /> Thời gian</div></th>
+                <th className="px-4 py-3 text-center"><div className="flex justify-center items-center gap-1"><Hash size={10} /> Điểm cầu</div></th>
+                <th className="px-4 py-3 text-center"><div className="flex justify-center items-center gap-1"><Users size={10} /> Thành phần</div></th>
+                <th className="px-4 py-3 text-right">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {filteredMeetings.map((m) => (
+                <tr key={m.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-bold text-slate-900 max-w-[200px] leading-tight">
+                    <div className={m.status === 'CANCELLED' ? 'line-through opacity-50' : ''}>{m.title}</div>
+                    {m.cancelReason && <div className="text-[9px] font-medium text-red-500 mt-1 italic">Lý do: {m.cancelReason}</div>}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-slate-600">{m.hostUnit}</td>
+                  <td className="px-4 py-3 text-slate-500 font-bold whitespace-nowrap">
+                    {new Date(m.startTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black">{Array.isArray(m.endpoints) ? m.endpoints.length : 0}</span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-black">{Array.isArray(m.participants) ? m.participants.length : 0}</span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {m.status === 'CANCELLED' ? (
+                      <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[8px] font-black uppercase rounded">Đã huỷ</span>
+                    ) : m.status === 'POSTPONED' ? (
+                      <span className="px-2 py-0.5 bg-amber-100 text-amber-600 text-[8px] font-black uppercase rounded">Hoãn</span>
+                    ) : (
+                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase rounded">Hợp lệ</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Footer Signature */}
+      <div className="pt-20 flex justify-between border-t border-slate-100">
+         <div className="max-w-xs space-y-2">
+            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ghi chú hệ thống</p>
+            <p className="text-[9px] italic text-slate-400 leading-relaxed font-medium">Báo cáo được khởi tạo tự động. Các dữ liệu về thời gian và đơn vị được ghi nhận tại thời điểm kết thúc hội nghị.</p>
+         </div>
+         <div className="text-center w-60 space-y-20">
+            <div className="space-y-1">
+               <p className="font-black text-[10px] uppercase tracking-widest text-slate-900">Người lập báo cáo</p>
+               <p className="text-[9px] text-slate-400 font-bold">(Ký và ghi rõ họ tên)</p>
+            </div>
+            <p className="font-black text-xs uppercase text-slate-900 italic">
+               {currentUser?.fullName || 'Quản trị viên hệ thống'}
+            </p>
+         </div>
       </div>
     </div>
   );

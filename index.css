@@ -58,6 +58,10 @@ body {
 }
 
 @media print {
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
   .no-print {
     display: none !important;
   }
