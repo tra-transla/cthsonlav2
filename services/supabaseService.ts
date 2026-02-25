@@ -2,88 +2,12 @@
 import { createClient } from '@supabase/supabase-js';
 import { Meeting, Unit, Staff, Endpoint, User, SystemSettings, ParticipantGroup, EndpointStatus } from '../types';
 
-const getEnv = (key: string) => {
-  // Prioritize Vite's import.meta.env (handles .env and Vercel/Cloud environment variables)
-  const viteKey = `VITE_${key}`;
-  let envValue = "";
-  try {
-    envValue = (import.meta as any).env?.[viteKey] || (import.meta as any).env?.[key];
-  } catch (e) {
-    // import.meta might not be available
-  }
-  
-  if (envValue) return envValue;
+const supabaseUrl = (window as any).process?.env?.SUPABASE_URL || "";
+const supabaseAnonKey = (window as any).process?.env?.SUPABASE_ANON_KEY || "";
 
-  // Fallback to window.process.env shim
-  try {
-    return (window as any).process?.env?.[key] || "";
-  } catch (e) {
-    return "";
-  }
-};
-
-const isValidUrl = (url: string) => {
-  try {
-    new URL(url);
-    return url.startsWith('http');
-  } catch (e) {
-    return false;
-  }
-};
-
-const supabaseUrl = getEnv('SUPABASE_URL') || "https://uhaqofhnfetdkciaswof.supabase.co";
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY') || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoYXFvZmhuZmV0ZGtjaWFzd29mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzE5MDEsImV4cCI6MjA4NDYwNzkwMX0.6wHHnIM8d9x0Yvd58BsumxTx3lUr_EZjX0PM5MWFHqA";
-
-// Only initialize Supabase if the URL looks valid and is not a placeholder
-export const supabase = (supabaseUrl && isValidUrl(supabaseUrl) && supabaseAnonKey && !supabaseAnonKey.includes('YOUR_')) 
+export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
-
-let useLocalFallback = !supabase;
-
-/**
- * Hàm hỗ trợ Upsert an toàn: Tự động loại bỏ các cột không tồn tại trong Database và thử lại.
- */
-async function safeUpsert(table: string, payload: any) {
-  if (!supabase) return;
-  
-  try {
-    const { error } = await supabase.from(table).upsert(payload);
-    if (!error) return;
-
-    // Kiểm tra nếu lỗi là do thiếu cột trong Schema
-    const errorMsg = error.message || "";
-    if (
-      errorMsg.includes('column') || 
-      errorMsg.includes('does not exist') || 
-      errorMsg.includes('schema cache')
-    ) {
-      console.warn(`Supabase Schema Mismatch in table "${table}":`, errorMsg);
-      
-      // Cố gắng trích xuất tên cột bị thiếu từ thông báo lỗi
-      const match = errorMsg.match(/column "([^"]+)"/) || errorMsg.match(/the '([^']+)' column/);
-      
-      if (match && match[1]) {
-        const missingColumn = match[1];
-        console.info(`Retrying upsert to "${table}" without missing column: ${missingColumn}`);
-        const { [missingColumn]: _, ...newPayload } = payload;
-        return safeUpsert(table, newPayload); // Đệ quy thử lại với payload đã lọc
-      }
-      
-      // Nếu không bắt được tên cột cụ thể nhưng biết là lỗi schema, thử bỏ qua updated_at nếu có
-      if (payload.updated_at) {
-        console.info(`Retrying upsert to "${table}" without updated_at...`);
-        const { updated_at, ...fallbackPayload } = payload;
-        return safeUpsert(table, fallbackPayload);
-      }
-    }
-    
-    throw error;
-  } catch (err) {
-    console.error(`Final error in safeUpsert for table "${table}":`, err);
-    throw err;
-  }
-}
 
 // --- MAPPERS: Chuyển đổi snake_case (DB) <-> camelCase (App) ---
 
@@ -103,8 +27,7 @@ const mapMeeting = (m: any): Meeting => ({
   endpointChecks: m.endpoint_checks || m.endpointChecks || {},
   status: m.status || 'SCHEDULED',
   cancelReason: m.cancel_reason || m.cancelReason || '',
-  invitationLink: m.invitation_link || m.invitationLink || '',
-  updatedAt: m.updated_at || m.updatedAt || null
+  invitationLink: m.invitation_link || m.invitationLink || ''
 });
 
 const unmapMeeting = (m: Meeting) => ({
@@ -116,15 +39,14 @@ const unmapMeeting = (m: Meeting) => ({
   chair_person_id: m.chairPersonId || null,
   start_time: m.startTime,
   end_time: m.endTime,
-  description: m.description || '',
-  participants: Array.isArray(m.participants) ? m.participants : [],
-  endpoints: Array.isArray(m.endpoints) ? m.endpoints : [],
+  description: m.description,
+  participants: m.participants,
+  endpoints: m.endpoints,
   notes: m.notes || null,
   endpoint_checks: m.endpointChecks || {},
   status: m.status || 'SCHEDULED',
   cancel_reason: m.cancelReason || null,
-  invitation_link: m.invitationLink || null,
-  updated_at: new Date().toISOString()
+  invitation_link: m.invitationLink || null
 });
 
 const mapEndpoint = (e: any): Endpoint => ({
@@ -132,8 +54,7 @@ const mapEndpoint = (e: any): Endpoint => ({
   name: e.name || 'N/A',
   location: e.location || 'N/A',
   status: (e.status as EndpointStatus) || EndpointStatus.DISCONNECTED,
-  lastConnected: e.last_connected || e.lastConnected || 'N/A',
-  updatedAt: e.updated_at || e.updatedAt || null
+  lastConnected: e.last_connected || e.lastConnected || 'N/A'
 });
 
 const mapStaff = (s: any): Staff => ({
@@ -142,8 +63,7 @@ const mapStaff = (s: any): Staff => ({
   unitId: s.unit_id || s.unitId || '',
   position: s.position || 'Cán bộ',
   email: s.email || '',
-  phone: s.phone || '',
-  updatedAt: s.updated_at || s.updatedAt || null
+  phone: s.phone || ''
 });
 
 const unmapStaff = (s: Staff) => ({
@@ -152,24 +72,14 @@ const unmapStaff = (s: Staff) => ({
   unit_id: s.unitId,
   position: s.position,
   email: s.email,
-  phone: s.phone,
-  updated_at: new Date().toISOString()
+  phone: s.phone
 });
 
 const mapUnit = (u: any): Unit => ({
   id: u.id,
   name: u.name || 'N/A',
   code: u.code || 'N/A',
-  description: u.description || '',
-  updatedAt: u.updated_at || u.updatedAt || null
-});
-
-const unmapUnit = (u: Unit) => ({
-  id: u.id,
-  name: u.name,
-  code: u.code,
-  description: u.description,
-  updated_at: new Date().toISOString()
+  description: u.description || ''
 });
 
 const mapUser = (u: any): User => ({
@@ -177,8 +87,7 @@ const mapUser = (u: any): User => ({
   username: u.username,
   fullName: u.full_name || u.fullName || 'N/A',
   role: u.role,
-  password: u.password,
-  updatedAt: u.updated_at || u.updatedAt || null
+  password: u.password
 });
 
 const unmapUser = (u: User) => ({
@@ -186,16 +95,14 @@ const unmapUser = (u: User) => ({
   username: u.username,
   full_name: u.fullName,
   role: u.role,
-  password: u.password,
-  updated_at: new Date().toISOString()
+  password: u.password
 });
 
 const mapSettings = (s: any): SystemSettings => ({
   systemName: s.system_name || s.systemName || '',
   shortName: s.short_name || s.shortName || '',
   logoBase64: s.logo_base_64 || s.logoBase64 || '',
-  primaryColor: s.primary_color || s.primaryColor || '#3B82F6',
-  updatedAt: s.updated_at || s.updatedAt || null
+  primaryColor: s.primary_color || s.primaryColor || '#3B82F6'
 });
 
 const unmapSettings = (s: SystemSettings) => ({
@@ -203,308 +110,155 @@ const unmapSettings = (s: SystemSettings) => ({
   system_name: s.systemName,
   short_name: s.shortName,
   logo_base_64: s.logoBase64,
-  primary_color: s.primaryColor,
-  updated_at: new Date().toISOString()
+  primary_color: s.primaryColor
 });
 
-// --- LOCAL BACKEND FALLBACK ---
-const localApi = {
-  async get(table: string) {
-    try {
-      const res = await fetch(`/api/db/${table}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    } catch (e) {
-      console.error(`Local API GET error for ${table}:`, e);
-      throw e;
-    }
-  },
-  async post(table: string, data: any) {
-    try {
-      const res = await fetch(`/api/db/${table}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    } catch (e) {
-      console.error(`Local API POST error for ${table}:`, e);
-      throw e;
-    }
-  },
-  async delete(table: string, id: string) {
-    try {
-      const res = await fetch(`/api/db/${table}/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    } catch (e) {
-      console.error(`Local API DELETE error for ${table}:`, e);
-      throw e;
-    }
-  },
-  async getSettings() {
-    try {
-      const res = await fetch('/api/settings');
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    } catch (e) {
-      console.error(`Local API GET settings error:`, e);
-      throw e;
-    }
-  },
-  async postSettings(data: any) {
-    try {
-      const res = await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    } catch (e) {
-      console.error(`Local API POST settings error:`, e);
-      throw e;
-    }
-  },
-  async checkHealth() {
-    try {
-      const res = await fetch('/api/health');
-      return res.ok;
-    } catch (e) {
-      return false;
-    }
-  }
-};
-
 export const supabaseService = {
-  isConfigured: () => !!supabase && !useLocalFallback,
-  isLocal: () => useLocalFallback,
-
-  async testConnection() {
-    if (!supabase) {
-      const isLocalHealthy = await localApi.checkHealth();
-      if (isLocalHealthy) {
-        useLocalFallback = true;
-        return { success: true, message: "Using Local Backend" };
-      } else {
-        return { success: false, message: "Local Backend unreachable. Make sure server is running." };
-      }
-    }
-    
-    try {
-      const { data, error } = await supabase.from('system_settings').select('id').limit(1);
-      if (error) throw error;
-      useLocalFallback = false;
-      return { success: true, message: "Connected to Supabase successfully", data };
-    } catch (err: any) {
-      console.warn("Supabase connection failed, falling back to local:", err.message);
-      const isLocalHealthy = await localApi.checkHealth();
-      if (isLocalHealthy) {
-        useLocalFallback = true;
-        return { success: true, message: "Supabase failed, using Local Backend fallback" };
-      }
-      return { success: false, message: `Supabase Error: ${err.message}. Local Backend also unreachable.` };
-    }
-  },
+  isConfigured: () => !!supabase,
 
   async getMeetings(): Promise<Meeting[]> {
-    if (useLocalFallback) return localApi.get('meetings');
-    const { data, error } = await supabase!.from('meetings').select('*').order('start_time', { ascending: false });
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('meetings').select('*').order('start_time', { ascending: false });
     if (error) {
       console.error("Supabase error fetching meetings:", error);
-      return localApi.get('meetings'); // Fallback on error
+      return [];
     }
     return (data || []).map(mapMeeting);
   },
 
   async upsertMeeting(m: Meeting) {
-    if (useLocalFallback) return localApi.post('meetings', m);
+    if (!supabase) return;
     const payload = unmapMeeting(m);
-    try {
-      await safeUpsert('meetings', payload);
-    } catch (e) {
-      return localApi.post('meetings', m);
+    const { error } = await supabase.from('meetings').upsert(payload);
+    if (error) {
+      console.error("Supabase error upserting meeting:", error);
+      throw error;
     }
   },
 
   async deleteMeeting(id: string) {
-    if (useLocalFallback) return localApi.delete('meetings', id);
-    const { error } = await supabase!.from('meetings').delete().eq('id', id);
-    if (error) return localApi.delete('meetings', id);
+    if (!supabase) return;
+    const { error } = await supabase.from('meetings').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async getEndpoints(): Promise<Endpoint[]> {
-    if (useLocalFallback) return localApi.get('endpoints');
-    const { data, error } = await supabase!.from('endpoints').select('*').order('name');
-    if (error) return localApi.get('endpoints');
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('endpoints').select('*').order('name');
+    if (error) return [];
     return (data || []).map(mapEndpoint);
   },
 
   async upsertEndpoint(e: Endpoint) {
-    if (useLocalFallback) return localApi.post('endpoints', e);
-    const payload: any = {
+    if (!supabase) return;
+    const { error } = await supabase.from('endpoints').upsert({
       id: e.id,
       name: e.name,
       location: e.location,
       status: e.status,
-      last_connected: e.lastConnected,
-      updated_at: new Date().toISOString()
-    };
-    try {
-      await safeUpsert('endpoints', payload);
-    } catch (err) {
-      return localApi.post('endpoints', e);
-    }
+      // Fix: Use e.lastConnected instead of e.last_connected to match Endpoint type
+      last_connected: e.lastConnected
+    });
+    if (error) throw error;
   },
 
   async deleteEndpoint(id: string) {
-    if (useLocalFallback) return localApi.delete('endpoints', id);
-    const { error } = await supabase!.from('endpoints').delete().eq('id', id);
-    if (error) return localApi.delete('endpoints', id);
+    if (!supabase) return;
+    const { error } = await supabase.from('endpoints').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async getUnits(): Promise<Unit[]> {
-    if (useLocalFallback) return localApi.get('units');
-    const { data, error } = await supabase!.from('units').select('*').order('name');
-    if (error) return localApi.get('units');
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('units').select('*').order('name');
+    if (error) return [];
     return (data || []).map(mapUnit);
   },
 
   async upsertUnit(u: Unit) {
-    if (useLocalFallback) return localApi.post('units', u);
-    const payload = unmapUnit(u);
-    try {
-      await safeUpsert('units', payload);
-    } catch (e) {
-      return localApi.post('units', u);
-    }
+    if (!supabase) return;
+    const { error } = await supabase.from('units').upsert(u);
+    if (error) throw error;
   },
 
   async deleteUnit(id: string) {
-    if (useLocalFallback) return localApi.delete('units', id);
-    const { error } = await supabase!.from('units').delete().eq('id', id);
-    if (error) return localApi.delete('units', id);
+    if (!supabase) return;
+    const { error } = await supabase.from('units').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async getStaff(): Promise<Staff[]> {
-    if (useLocalFallback) return localApi.get('staff');
-    const { data, error } = await supabase!.from('staff').select('*').order('full_name');
-    if (error) return localApi.get('staff');
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('staff').select('*').order('full_name');
+    if (error) return [];
     return (data || []).map(mapStaff);
   },
 
   async upsertStaff(s: Staff) {
-    if (useLocalFallback) return localApi.post('staff', s);
-    const payload = unmapStaff(s);
-    try {
-      await safeUpsert('staff', payload);
-    } catch (e) {
-      return localApi.post('staff', s);
-    }
+    if (!supabase) return;
+    const { error } = await supabase.from('staff').upsert(unmapStaff(s));
+    if (error) throw error;
   },
 
   async deleteStaff(id: string) {
-    if (useLocalFallback) return localApi.delete('staff', id);
-    const { error } = await supabase!.from('staff').delete().eq('id', id);
-    if (error) return localApi.delete('staff', id);
+    if (!supabase) return;
+    const { error } = await supabase.from('staff').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async getGroups(): Promise<ParticipantGroup[]> {
-    if (useLocalFallback) return localApi.get('groups');
-    const { data, error } = await supabase!.from('participant_groups').select('*').order('name');
-    if (error) return localApi.get('groups');
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('participant_groups').select('*').order('name');
     return data || [];
   },
 
   async upsertGroup(g: ParticipantGroup) {
-    if (useLocalFallback) return localApi.post('groups', g);
-    const payload = { ...g, updated_at: new Date().toISOString() };
-    try {
-      await safeUpsert('participant_groups', payload);
-    } catch (e) {
-      return localApi.post('groups', g);
-    }
+    if (!supabase) return;
+    const { error } = await supabase.from('participant_groups').upsert(g);
+    if (error) throw error;
   },
 
   async deleteGroup(id: string) {
-    if (useLocalFallback) return localApi.delete('groups', id);
-    const { error } = await supabase!.from('participant_groups').delete().eq('id', id);
-    if (error) return localApi.delete('groups', id);
+    if (!supabase) return;
+    const { error } = await supabase.from('participant_groups').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async getUsers(): Promise<User[]> {
-    if (useLocalFallback) return localApi.get('users');
-    const { data, error } = await supabase!.from('users').select('*').order('username');
-    if (error) return localApi.get('users');
+    if (!supabase) return [];
+    const { data, error } = await supabase.from('users').select('*').order('username');
+    if (error) return [];
     return (data || []).map(mapUser);
   },
 
   async upsertUser(u: User) {
-    if (useLocalFallback) return localApi.post('users', u);
-    const payload = unmapUser(u);
-    try {
-      await safeUpsert('users', payload);
-    } catch (e) {
-      return localApi.post('users', u);
-    }
+    if (!supabase) return;
+    const { error } = await supabase.from('users').upsert(unmapUser(u));
+    if (error) throw error;
   },
 
   async deleteUser(id: string) {
-    if (useLocalFallback) return localApi.delete('users', id);
-    const { error } = await supabase!.from('users').delete().eq('id', id);
-    if (error) return localApi.delete('users', id);
+    if (!supabase) return;
+    const { error } = await supabase.from('users').delete().eq('id', id);
+    if (error) throw error;
   },
 
   async getSettings(): Promise<SystemSettings | null> {
-    if (useLocalFallback) return localApi.getSettings();
-    try {
-      const { data, error } = await supabase!.from('system_settings').select('*').single();
-      if (error) {
-        console.warn("Supabase: Error fetching system_settings (might not exist yet):", error.message);
-        return localApi.getSettings();
-      }
-      return mapSettings(data);
-    } catch (err) {
-      console.error("Supabase: Unexpected error in getSettings:", err);
-      return localApi.getSettings();
-    }
+    if (!supabase) return null;
+    const { data, error } = await supabase.from('system_settings').select('*').single();
+    if (error) return null;
+    return mapSettings(data);
   },
 
   async updateSettings(s: SystemSettings) {
-    if (useLocalFallback) return localApi.postSettings(s);
-    const payload = unmapSettings(s);
-    try {
-      await safeUpsert('system_settings', payload);
-    } catch (e) {
-      return localApi.postSettings(s);
-    }
+    if (!supabase) return;
+    const { error } = await supabase.from('system_settings').upsert(unmapSettings(s));
+    if (error) throw error;
   },
 
   subscribeTable(table: string, callback: (payload: any) => void) {
-    if (useLocalFallback) {
-      // Fallback to WebSocket for local backend
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${protocol}//${window.location.host}`);
-      ws.onmessage = (event) => {
-        try {
-          const message = JSON.parse(event.data);
-          if (message.table === table || (table === 'participant_groups' && message.table === 'groups')) {
-            callback({
-              eventType: message.type === 'UPDATE' ? 'UPDATE' : 'DELETE',
-              new: message.data,
-              old: { id: message.id },
-              mappedData: message.data
-            });
-          }
-        } catch (e) {}
-      };
-      ws.onerror = () => {
-        console.warn(`WebSocket error for table ${table}, real-time updates may be disabled.`);
-      };
-      return { unsubscribe: () => ws.close() };
-    }
-    return supabase!
+    if (!supabase) return null;
+    return supabase
       .channel(`public:${table}`)
       .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
         let mappedData = payload.new;

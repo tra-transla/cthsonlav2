@@ -63,10 +63,10 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
         startTime: formatISOToLocalInput(editingMeeting.startTime),
         endTime: formatISOToLocalInput(editingMeeting.endTime),
         description: editingMeeting.description,
-        participants: Array.isArray(editingMeeting.participants) ? editingMeeting.participants.join(', ') : '',
+        participants: editingMeeting.participants.join(', '),
         invitationLink: editingMeeting.invitationLink || '',
       });
-      setSelectedEndpointIds(Array.isArray(editingMeeting.endpoints) ? editingMeeting.endpoints.map(e => e && e.id).filter(Boolean) : []);
+      setSelectedEndpointIds(editingMeeting.endpoints.map(e => e.id));
     } else {
       setFormData({
         title: '',
@@ -90,12 +90,9 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
   }, [formData.hostUnitId, staff]);
 
   const filteredEndpoints = useMemo(() => {
-    if (!Array.isArray(availableEndpoints)) return [];
     return availableEndpoints.filter(ep => 
-      ep && (
-        (ep.name || '').toLowerCase().includes(endpointSearch.toLowerCase()) ||
-        (ep.location || '').toLowerCase().includes(endpointSearch.toLowerCase())
-      )
+      ep.name.toLowerCase().includes(endpointSearch.toLowerCase()) ||
+      ep.location.toLowerCase().includes(endpointSearch.toLowerCase())
     );
   }, [endpointSearch, availableEndpoints]);
 
@@ -130,7 +127,7 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
     }
 
     const meetingData: Meeting = {
-      id: editingMeeting ? editingMeeting.id : `MEET-${Date.now()}`,
+      id: editingMeeting ? editingMeeting.id : `MEET-${Math.floor(1000 + Math.random() * 9000)}`,
       title: formData.title,
       hostUnit: formData.hostUnit,
       hostUnitId: formData.hostUnitId,

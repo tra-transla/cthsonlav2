@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ thống Quản lý & Giám sát Họp Trực tuyến</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script>
-      // Shim process.env for libraries that expect it
       window.process = { 
         env: { 
           NODE_ENV: 'production',
@@ -16,26 +17,43 @@
           SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoYXFvZmhuZmV0ZGtjaWFzd29mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzE5MDEsImV4cCI6MjA4NDYwNzkwMX0.6wHHnIM8d9x0Yvd58BsumxTx3lUr_EZjX0PM5MWFHqA"
         } 
       };
-      
-      // Handle potential missing env vars from Vite build
-      try {
-        if (typeof import.meta !== 'undefined' && import.meta.env) {
-          window.process.env.SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || window.process.env.SUPABASE_URL;
-          window.process.env.SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || window.process.env.SUPABASE_ANON_KEY;
-        }
-      } catch (e) {}
-
       window.global = window;
     </script>
+    <style>
+        body { 
+          font-family: 'Inter', sans-serif; 
+          margin: 0; 
+          padding: 0; 
+        }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; }
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 10px; }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "html2pdf.js": "https://esm.sh/html2pdf.js@^0.14.0",
+    "jszip": "https://esm.sh/jszip@^3.10.1",
+    "file-saver": "https://esm.sh/file-saver@^2.0.5",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.48.1",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
 </head>
-<body class="bg-slate-950 text-gray-900">
-    <div id="root">
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; color: #94a3b8; background: #020617;">
-            <div style="width: 40px; height: 40px; border: 3px solid rgba(59, 130, 246, 0.2); border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
-            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
-            <div style="font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em;">Đang khởi tạo hệ thống...</div>
-        </div>
-    </div>
+<body class="bg-gray-50 text-gray-900">
+    <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

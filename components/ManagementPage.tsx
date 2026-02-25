@@ -57,26 +57,26 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
     setSettingsForm(systemSettings);
   }, [systemSettings]);
 
-  const filteredUnits = (units || []).filter(u => 
-    u && (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-    u && (u.code || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUnits = units.filter(u => 
+    u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredStaff = (staff || []).filter(s => 
-    s && (s.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-    s && (s.position || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredStaff = staff.filter(s => 
+    (s.fullName || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (s.position || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredGroups = (participantGroups || []).filter(g => 
-    g && (g.name || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredGroups = participantGroups.filter(g => 
+    g.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredEndpoints = (endpoints || []).filter(e => 
-    e && (e.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    e && (e.location || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEndpoints = endpoints.filter(e => 
+    e.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    e.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getUnitName = (id: string) => (units || []).find(u => u.id === id)?.name || 'N/A';
+  const getUnitName = (id: string) => units.find(u => u.id === id)?.name || 'N/A';
 
   const openModal = (item: any = null) => {
     setEditingItem(item);
@@ -135,8 +135,8 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
     setSettingsForm({ ...settingsForm, logoBase64: '' });
   };
 
-  const primaryTextStyle = { color: systemSettings?.primaryColor || '#3B82F6' };
-  const primaryBgStyle = { backgroundColor: systemSettings?.primaryColor || '#3B82F6' };
+  const primaryTextStyle = { color: systemSettings.primaryColor };
+  const primaryBgStyle = { backgroundColor: systemSettings.primaryColor };
 
   return (
     <div className="space-y-6">

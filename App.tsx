@@ -71,18 +71,14 @@ const App: React.FC = () => {
       const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
       const fifteenMinsLater = new Date(now.getTime() + 15 * 60 * 1000);
 
-      const upcoming = (meetings || []).filter(m => {
-        if (!m || m.status === 'CANCELLED') return false;
+      const upcoming = meetings.filter(m => {
+        if (m.status === 'CANCELLED') return false;
         const start = new Date(m.startTime);
         return start > now && start <= oneHourLater;
       });
 
       // Lấy cuộc họp gần nhất để hiển thị Banner trên Dashboard
-      const nextOne = upcoming.sort((a, b) => {
-        const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
-        const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
-        return timeA - timeB;
-      })[0];
+      const nextOne = upcoming.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
       setCurrentAlertMeeting(nextOne || null);
 
       // Xử lý gửi thông báo đẩy và Toast cho cuộc họp trong vòng 15 phút
@@ -92,7 +88,7 @@ const App: React.FC = () => {
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('🔔 Hội nghị sắp bắt đầu!', {
             body: `${immediate.title} sẽ diễn ra lúc ${new Date(immediate.startTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit', hour12: false})}`,
-            icon: systemSettings?.logoBase64 || 'https://cdn-icons-png.flaticon.com/512/3661/3661331.png'
+            icon: systemSettings.logoBase64 || 'https://cdn-icons-png.flaticon.com/512/3661/3661331.png'
           });
         }
         
@@ -105,118 +101,64 @@ const App: React.FC = () => {
     checkMeetings();
     const interval = setInterval(checkMeetings, 60000);
     return () => clearInterval(interval);
-  }, [meetings, notifiedMeetingIds, systemSettings?.logoBase64]);
-
-  const mergeData = <T extends { id: string, updatedAt?: string }>(cloudData: T[], localData: T[]): T[] => {
-    const mergedMap = new Map<string, T>();
-    if (Array.isArray(localData)) {
-      localData.forEach(item => {
-        if (item && item.id) mergedMap.set(item.id, item);
-      });
-    }
-    if (Array.isArray(cloudData)) {
-      cloudData.forEach(cloudItem => {
-        if (!cloudItem || !cloudItem.id) return;
-        const localItem = mergedMap.get(cloudItem.id);
-        if (!localItem) {
-          mergedMap.set(cloudItem.id, cloudItem);
-        } else {
-          const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
-          const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
-          // Prioritize cloud if it's newer OR if local has no timestamp (initial data)
-          if (cloudDate >= localDate || !localItem.updatedAt) {
-            mergedMap.set(cloudItem.id, cloudItem);
-          }
-        }
-      });
-    }
-    return Array.from(mergedMap.values());
-  };
-
-  const syncData = async () => {
-    console.log("Starting data sync...");
-    setIsSyncing(true);
-    try {
-      // Test connection first
-      const connTest = await supabaseService.testConnection();
-      if (!connTest.success) {
-        console.error("Connection Error:", connTest.message);
-        throw new Error(connTest.message);
-      }
-      console.log("Connection Verified:", connTest.message);
-
-      const [cloudMeetings, cloudEndpoints, cloudUnits, cloudStaff, cloudGroups, cloudUsers, cloudSettings] = await Promise.all([
-        supabaseService.getMeetings(),
-        supabaseService.getEndpoints(),
-        supabaseService.getUnits(),
-        supabaseService.getStaff(),
-        supabaseService.getGroups(),
-        supabaseService.getUsers(),
-        supabaseService.getSettings()
-      ]);
-
-      console.log("Cloud data fetched:", {
-        meetings: cloudMeetings?.length,
-        endpoints: cloudEndpoints?.length,
-        units: cloudUnits?.length,
-        staff: cloudStaff?.length,
-        groups: cloudGroups?.length,
-        users: cloudUsers?.length,
-        settings: !!cloudSettings
-      });
-
-      setMeetings(prev => {
-        const merged = mergeData(cloudMeetings || [], prev).sort((a, b) => {
-          const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
-          const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
-          return timeB - timeA;
-        });
-        storageService.saveMeetings(merged);
-        return merged;
-      });
-      setEndpoints(prev => { const merged = mergeData(cloudEndpoints || [], prev); storageService.saveEndpoints(merged); return merged; });
-      setUnits(prev => { const merged = mergeData(cloudUnits || [], prev); storageService.saveUnits(merged); return merged; });
-      setStaff(prev => { const merged = mergeData(cloudStaff || [], prev); storageService.saveStaff(merged); return merged; });
-      setGroups(prev => { const merged = mergeData(cloudGroups || [], prev); storageService.saveGroups(merged); return merged; });
-      setUsers(prev => { const merged = mergeData(cloudUsers || [], prev); storageService.saveUsers(merged); return merged; });
-      
-      if (cloudSettings) {
-        setSystemSettings(cloudSettings);
-        storageService.saveSystemSettings(cloudSettings);
-      }
-      setLastRefreshed(new Date());
-      setHasSyncedOnce(true);
-      console.log("Data sync completed successfully.");
-    } catch (err) {
-      console.error("Đồng bộ thất bại:", err);
-      // alert("Lỗi đồng bộ dữ liệu từ Cloud. Vui lòng kiểm tra kết nối API Supabase.");
-    } finally {
-      setIsSyncing(false);
-      setHasSyncedOnce(true);
-    }
-  };
+  }, [meetings, notifiedMeetingIds, systemSettings.logoBase64]);
 
   useEffect(() => {
+    const syncData = async () => {
+      if (!supabaseService.isConfigured()) return;
+      
+      setIsSyncing(true);
+      try {
+        const [cloudMeetings, cloudEndpoints, cloudUnits, cloudStaff, cloudGroups, cloudUsers, cloudSettings] = await Promise.all([
+          supabaseService.getMeetings(),
+          supabaseService.getEndpoints(),
+          supabaseService.getUnits(),
+          supabaseService.getStaff(),
+          supabaseService.getGroups(),
+          supabaseService.getUsers(),
+          supabaseService.getSettings()
+        ]);
+
+        setMeetings(cloudMeetings); storageService.saveMeetings(cloudMeetings);
+        setEndpoints(cloudEndpoints); storageService.saveEndpoints(cloudEndpoints);
+        setUnits(cloudUnits); storageService.saveUnits(cloudUnits);
+        setStaff(cloudStaff); storageService.saveStaff(cloudStaff);
+        setGroups(cloudGroups); storageService.saveGroups(cloudGroups);
+        setUsers(cloudUsers); storageService.saveUsers(cloudUsers);
+        
+        if (cloudSettings) {
+          setSystemSettings(cloudSettings);
+          storageService.saveSystemSettings(cloudSettings);
+        }
+        
+        setLastRefreshed(new Date());
+        setHasSyncedOnce(true);
+      } catch (err) {
+        console.error("Đồng bộ thất bại:", err);
+      } finally {
+        setIsSyncing(false);
+      }
+    };
+
     syncData();
 
     const tables = ['meetings', 'endpoints', 'units', 'staff', 'participant_groups', 'users', 'system_settings'];
     const subscriptions = tables.map(table => {
       return supabaseService.subscribeTable(table, (payload) => {
-        if (!payload) return;
         const { eventType, old, mappedData } = payload;
         
         const updateMap: Record<string, any> = {
-          'meetings': { state: setMeetings, storage: (data: any) => storageService.saveMeetings(data) },
-          'endpoints': { state: setEndpoints, storage: (data: any) => storageService.saveEndpoints(data) },
-          'units': { state: setUnits, storage: (data: any) => storageService.saveUnits(data) },
-          'staff': { state: setStaff, storage: (data: any) => storageService.saveStaff(data) },
-          'participant_groups': { state: setGroups, storage: (data: any) => storageService.saveGroups(data) },
-          'users': { state: setUsers, storage: (data: any) => storageService.saveUsers(data) }
+          'meetings': { state: setMeetings },
+          'endpoints': { state: setEndpoints },
+          'units': { state: setUnits },
+          'staff': { state: setStaff },
+          'participant_groups': { state: setGroups },
+          'users': { state: setUsers }
         };
 
         if (table === 'system_settings' && mappedData) {
           setSystemSettings(mappedData);
-          storageService.saveSystemSettings(mappedData);
+          storageService.saveSystemSettings(mappedData); // Cập nhật local khi có thay đổi từ cloud
           return;
         }
 
@@ -228,18 +170,14 @@ const App: React.FC = () => {
               if (!prev.some(item => item.id === mappedData.id)) next = [mappedData, ...prev];
             } else if (eventType === 'UPDATE') {
               next = prev.map(item => item.id === mappedData.id ? mappedData : item);
-              if (table === 'meetings') {
-                setSelectedMeeting(current => (current && current.id === mappedData.id) ? mappedData : current);
-              }
-              if (currentUser && table === 'users' && mappedData.id === currentUser.id) {
+              setSelectedMeeting(current => (current && current.id === mappedData.id) ? mappedData : current);
+              if (currentUser && mappedData.id === currentUser.id) {
                 setCurrentUser(mappedData);
               }
             } else if (eventType === 'DELETE') {
               next = prev.filter(item => item.id !== old.id);
-              if (table === 'meetings' && selectedMeeting?.id === old.id) setSelectedMeeting(null);
+              if (selectedMeeting?.id === old.id) setSelectedMeeting(null);
             }
-            
-            config.storage(next);
             return next;
           });
         }
@@ -247,7 +185,7 @@ const App: React.FC = () => {
     });
 
     return () => subscriptions.forEach(sub => sub?.unsubscribe());
-  }, []); // Run only once on mount
+  }, [selectedMeeting?.id, currentUser?.id]);
 
   const dashboardStats = useMemo(() => {
     const now = new Date();
@@ -258,17 +196,15 @@ const App: React.FC = () => {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const startOfYear = new Date(now.getFullYear(), 0, 1);
 
-    const validMeetings = (meetings || []).filter(m => m && m.status !== 'CANCELLED');
+    const validMeetings = meetings.filter(m => m.status !== 'CANCELLED');
 
-    const weeklyMeetings = validMeetings.filter(m => m && m.startTime && new Date(m.startTime) >= startOfWeek);
-    const monthlyMeetings = validMeetings.filter(m => m && m.startTime && new Date(m.startTime) >= startOfMonth);
-    const yearlyMeetings = validMeetings.filter(m => m && m.startTime && new Date(m.startTime) >= startOfYear);
+    const weeklyMeetings = validMeetings.filter(m => new Date(m.startTime) >= startOfWeek);
+    const monthlyMeetings = validMeetings.filter(m => new Date(m.startTime) >= startOfMonth);
+    const yearlyMeetings = validMeetings.filter(m => new Date(m.startTime) >= startOfYear);
 
     const unitMap: Record<string, number> = {};
     validMeetings.forEach(m => {
-      if (m && m.hostUnit) {
-        unitMap[m.hostUnit] = (unitMap[m.hostUnit] || 0) + 1;
-      }
+      unitMap[m.hostUnit] = (unitMap[m.hostUnit] || 0) + 1;
     });
 
     const unitStats = Object.entries(unitMap)
@@ -277,20 +213,18 @@ const App: React.FC = () => {
       .slice(0, 6);
 
     const topUnit = unitStats[0]?.name || "Chưa xác định";
-    const connected = (endpoints || []).filter(e => e && e.status === EndpointStatus.CONNECTED).length;
-    const totalEndpoints = (endpoints || []).length;
-    const uptime = totalEndpoints > 0 ? ((connected / totalEndpoints) * 100).toFixed(1) : "0";
+    const connected = endpoints.filter(e => e.status === EndpointStatus.CONNECTED).length;
+    const uptime = endpoints.length > 0 ? ((connected / endpoints.length) * 100).toFixed(1) : "0";
 
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (6 - i));
       const dateStr = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-      const count = validMeetings.filter(m => m && m.startTime && new Date(m.startTime).toDateString() === d.toDateString()).length;
+      const count = validMeetings.filter(m => new Date(m.startTime).toDateString() === d.toDateString()).length;
       return { name: dateStr, count };
     });
 
     const totalDurationMs = validMeetings.reduce((acc, m) => {
-      if (!m || !m.startTime || !m.endTime) return acc;
       const start = new Date(m.startTime).getTime();
       const end = new Date(m.endTime).getTime();
       return acc + (end - start);
@@ -305,11 +239,7 @@ const App: React.FC = () => {
       : "100";
 
     const engagementScore = validMeetings.length > 0 
-      ? Math.min(100, Math.floor(validMeetings.reduce((acc, m) => {
-          const epCount = Array.isArray(m?.endpoints) ? m.endpoints.length : 0;
-          const partCount = Array.isArray(m?.participants) ? m.participants.length : 0;
-          return acc + (epCount * 2 + partCount);
-        }, 0) / validMeetings.length * 1.5))
+      ? Math.min(100, Math.floor(validMeetings.reduce((acc, m) => acc + (m.endpoints.length * 2 + m.participants.length), 0) / validMeetings.length * 1.5))
       : 0;
 
     return {
@@ -323,14 +253,7 @@ const App: React.FC = () => {
       avgDuration: avgDurationHours,
       onTimeRate: onTimeRate,
       engagementScore: engagementScore,
-      recentMeetings: [...(meetings || [])]
-        .filter(m => m && m.startTime)
-        .sort((a, b) => {
-          const timeA = a && a.startTime ? new Date(a.startTime).getTime() : 0;
-          const timeB = b && b.startTime ? new Date(b.startTime).getTime() : 0;
-          return timeB - timeA;
-        })
-        .slice(0, 5)
+      recentMeetings: [...meetings].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).slice(0, 5)
     };
   }, [meetings, endpoints]);
 
@@ -342,62 +265,32 @@ const App: React.FC = () => {
     setIsSidebarOpen(false);
   };
 
-  if (!hasSyncedOnce && isSyncing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white font-sans">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative">
-            <div className="w-16 h-16 border-4 border-blue-500/20 rounded-full"></div>
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin absolute inset-0"></div>
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-black uppercase tracking-[0.3em] text-blue-400 mb-2">Hệ thống CTH Sơn La</p>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Đang đồng bộ dữ liệu...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   const handleUpdateMeeting = async (meeting: Meeting) => {
-    const updatedMeeting = { ...meeting, updatedAt: new Date().toISOString() };
-    
-    // 1. Update local state and storage first for immediate feedback
     setMeetings(prev => {
-      const updated = prev.map(m => m.id === updatedMeeting.id ? updatedMeeting : m);
+      const updated = prev.map(m => m.id === meeting.id ? meeting : m);
       storageService.saveMeetings(updated);
       return updated;
     });
 
-    if (selectedMeeting && selectedMeeting.id === updatedMeeting.id) {
-        setSelectedMeeting(updatedMeeting);
+    if (selectedMeeting && selectedMeeting.id === meeting.id) {
+        setSelectedMeeting(meeting);
     }
     
-    // 2. Then sync to cloud
-    try { 
-      await supabaseService.upsertMeeting(updatedMeeting); 
-      setLastRefreshed(new Date());
-    } catch (err: any) { 
-      console.error("Cập nhật thất bại:", err); 
-      // Only alert if we are supposed to be cloud but failed completely
-      if (supabaseService.isConfigured()) {
-        alert(`Cập nhật lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời.`);
+    if (supabaseService.isConfigured()) {
+      try { 
+        await supabaseService.upsertMeeting(meeting); 
+      } catch (err) { 
+        console.error("Cập nhật Cloud thất bại:", err); 
       }
     }
   };
 
   const handleDeleteMeeting = async (id: string) => {
     if (!window.confirm('Xóa cuộc họp này vĩnh viễn khỏi hệ thống?')) return;
-    setMeetings(prev => {
-      const updated = prev.filter(m => m.id !== id);
-      storageService.saveMeetings(updated);
-      return updated;
-    });
+    setMeetings(prev => prev.filter(m => m.id !== id));
     if (selectedMeeting?.id === id) setSelectedMeeting(null);
-    try { 
-      await supabaseService.deleteMeeting(id); 
-    } catch (err) { 
-      console.error("Xóa thất bại:", err); 
+    if (supabaseService.isConfigured()) {
+      try { await supabaseService.deleteMeeting(id); } catch (err) { console.error("Xóa thất bại:", err); }
     }
   };
 
@@ -406,26 +299,19 @@ const App: React.FC = () => {
     setCurrentUser(updatedUser);
     storageService.saveUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
 
-    try {
-      await supabaseService.upsertUser(updatedUser);
-    } catch (err) {
-      console.error("Lỗi cập nhật mật khẩu:", err);
-      if (supabaseService.isConfigured()) throw err;
+    if (supabaseService.isConfigured()) {
+      try {
+        await supabaseService.upsertUser(updatedUser);
+      } catch (err) {
+        console.error("Lỗi cập nhật mật khẩu Cloud:", err);
+        throw err;
+      }
     }
   };
 
   if (!currentUser) return (
     <>
-      <LoginView 
-        users={users} 
-        meetings={meetings} 
-        onLoginSuccess={setCurrentUser} 
-        systemSettings={systemSettings} 
-        isSyncing={isSyncing}
-        isCloudConnected={supabaseService.isConfigured()}
-        lastRefreshed={lastRefreshed}
-        onSync={syncData}
-      />
+      <LoginView users={users} meetings={meetings} onLoginSuccess={setCurrentUser} systemSettings={systemSettings} />
       {showToast && currentAlertMeeting && (
         <NotificationToast 
           meeting={currentAlertMeeting} 
@@ -438,8 +324,8 @@ const App: React.FC = () => {
     </>
   );
 
-  const primaryBgStyle = { backgroundColor: systemSettings?.primaryColor || '#3B82F6' };
-  const primaryTextStyle = { color: systemSettings?.primaryColor || '#3B82F6' };
+  const primaryBgStyle = { backgroundColor: systemSettings.primaryColor };
+  const primaryTextStyle = { color: systemSettings.primaryColor };
 
   return (
     <div className="min-h-screen flex bg-gray-50 overflow-hidden relative">
@@ -451,11 +337,11 @@ const App: React.FC = () => {
         <div className="p-6 flex justify-between items-center">
           <div className="flex items-center gap-3 min-w-0">
              <div className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-                {systemSettings?.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
+                {systemSettings.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
              </div>
              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings?.shortName || 'HỘI NGHỊ'}</span>
-                <span className="text-[9px] font-bold text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser?.fullName || 'User'}</span>
+                <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings.shortName}</span>
+                <span className="text-[9px] font-bold text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser.fullName || 'User'}</span>
              </div>
           </div>
           <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-white"><X size={20} /></button>
@@ -488,16 +374,10 @@ const App: React.FC = () => {
           <button onClick={toggleSidebar} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"><Menu size={24} /></button>
           
           <div className="flex items-center gap-4">
-             <div 
-               className={`flex items-center gap-2 px-3 py-1 border rounded-full cursor-pointer hover:bg-gray-100 transition-colors ${supabaseService.isConfigured() ? 'bg-gray-50 border-gray-200' : 'bg-red-50 border-red-100'}`}
-               onClick={() => syncData()}
-               title="Nhấn để đồng bộ ngay"
-             >
-                <div className={`w-2 h-2 rounded-full ${
-                  isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'
-                }`}></div>
-                <span className={`text-[10px] font-black uppercase tracking-widest ${!supabaseService.isConfigured() ? 'text-blue-600' : 'text-slate-500'}`}>
-                  {isSyncing ? 'Đang đồng bộ...' : (supabaseService.isLocal() ? `Server Connected: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}` : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`)}
+             <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-200 rounded-full">
+                <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'}`}></div>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  {isSyncing ? 'Đang đồng bộ...' : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`}
                 </span>
              </div>
           </div>
@@ -533,12 +413,12 @@ const App: React.FC = () => {
                  />
                )}
 
-                {/* Primary Stats */}
+               {/* Primary Stats */}
                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-                  <StatCard title="Họp trong Tuần" value={dashboardStats.weekly} icon={<CalendarDays color={systemSettings?.primaryColor || '#3B82F6'} />} description="Tổng số cuộc họp diễn ra trong tuần này." />
-                  <StatCard title="Họp trong Tháng" value={dashboardStats.monthly} icon={<FileText color={systemSettings?.primaryColor || '#3B82F6'} />} description="Tổng số cuộc họp diễn ra trong tháng này." />
+                  <StatCard title="Họp trong Tuần" value={dashboardStats.weekly} icon={<CalendarDays color={systemSettings.primaryColor} />} description="Tổng số cuộc họp diễn ra trong tuần này." />
+                  <StatCard title="Họp trong Tháng" value={dashboardStats.monthly} icon={<FileText color={systemSettings.primaryColor} />} description="Tổng số cuộc họp diễn ra trong tháng này." />
                   <StatCard title="Họp trong Năm" value={dashboardStats.yearly} icon={<BarChart3 className="text-amber-500" />} description={`Tổng số cuộc họp trong năm ${new Date().getFullYear()}.`} />
-                  <StatCard title="Uptime Hạ tầng" value={`${dashboardStats.uptime}%`} icon={<MonitorPlay color={systemSettings?.primaryColor || '#3B82F6'} />} description="Tỷ lệ điểm cầu đang trực tuyến." />
+                  <StatCard title="Uptime Hạ tầng" value={`${dashboardStats.uptime}%`} icon={<MonitorPlay color={systemSettings.primaryColor} />} description="Tỷ lệ điểm cầu đang trực tuyến." />
                </div>
 
                {/* Efficiency KPIs Section */}
@@ -583,11 +463,11 @@ const App: React.FC = () => {
                            <AreaChart data={dashboardStats.last7Days}>
                               <defs>
                                 <linearGradient id="colorCount" x1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor={systemSettings?.primaryColor || '#3B82F6'} stopOpacity={0.3}/>
-                                  <stop offset="95%" stopColor={systemSettings?.primaryColor || '#3B82F6'} stopOpacity={0}/>
+                                  <stop offset="5%" stopColor={systemSettings.primaryColor} stopOpacity={0.3}/>
+                                  <stop offset="95%" stopColor={systemSettings.primaryColor} stopOpacity={0}/>
                                 </linearGradient>
                               </defs>
-                              <Area type="monotone" dataKey="count" stroke={systemSettings?.primaryColor || '#3B82F6'} strokeWidth={4} fill="url(#colorCount)" />
+                              <Area type="monotone" dataKey="count" stroke={systemSettings.primaryColor} strokeWidth={4} fill="url(#colorCount)" />
                               <XAxis dataKey="name" fontSize={10} fontWeight="bold" tick={{fill: '#94a3b8'}} />
                               <YAxis fontSize={10} fontWeight="bold" tick={{fill: '#94a3b8'}} />
                               <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
@@ -678,74 +558,76 @@ const App: React.FC = () => {
               onSelect={setSelectedMeeting} 
               isAdmin={canManageMeetings} 
               onEdit={m => { setEditingMeeting(m); setIsCreateModalOpen(true); }} 
-              onDelete={canManageMeetings ? handleDeleteMeeting : undefined} 
+              onDelete={isAdmin ? handleDeleteMeeting : undefined} 
               onAdd={() => { setEditingMeeting(null); setIsCreateModalOpen(true); }} 
               onUpdate={handleUpdateMeeting} 
             />
           )}
           {activeTab === 'monitoring' && isAdmin && <MonitoringGrid endpoints={endpoints} onUpdateEndpoint={async (e) => {
-              await supabaseService.upsertEndpoint(e);
+              if (supabaseService.isConfigured()) await supabaseService.upsertEndpoint(e);
               setEndpoints(prev => prev.map(item => item.id === e.id ? e : item));
           }} />}
           {activeTab === 'management' && <ManagementPage 
               units={units} staff={staff} participantGroups={groups} endpoints={endpoints} systemSettings={systemSettings} 
               onAddUnit={async u => { 
                 const newUnit = { ...u, id: `U${Date.now()}` };
-                await supabaseService.upsertUnit(newUnit);
+                if (supabaseService.isConfigured()) await supabaseService.upsertUnit(newUnit);
                 setUnits(prev => [...prev, newUnit]);
               }} 
               onUpdateUnit={async u => { 
-                await supabaseService.upsertUnit(u);
+                if (supabaseService.isConfigured()) await supabaseService.upsertUnit(u);
                 setUnits(prev => prev.map(item => item.id === u.id ? u : item));
               }} 
               onDeleteUnit={async id => { 
-                await supabaseService.deleteUnit(id);
+                if (supabaseService.isConfigured()) await supabaseService.deleteUnit(id);
                 setUnits(prev => prev.filter(u => u.id !== id));
               }}
               onAddStaff={async s => { 
                 const newStaff = { ...s, id: `S${Date.now()}` };
-                await supabaseService.upsertStaff(newStaff);
+                if (supabaseService.isConfigured()) await supabaseService.upsertStaff(newStaff);
                 setStaff(prev => [...prev, newStaff]);
               }}
               onUpdateStaff={async s => { 
-                await supabaseService.upsertStaff(s);
+                if (supabaseService.isConfigured()) await supabaseService.upsertStaff(s);
                 setStaff(prev => prev.map(item => item.id === s.id ? s : item));
-              }} 
+              }}
               onDeleteStaff={async id => { 
-                await supabaseService.deleteStaff(id);
+                if (supabaseService.isConfigured()) await supabaseService.deleteStaff(id);
                 setStaff(prev => prev.filter(s => s.id !== id));
               }}
               onAddGroup={async g => { 
                 const newGroup = { ...g, id: `G${Date.now()}` };
-                await supabaseService.upsertGroup(newGroup);
+                if (supabaseService.isConfigured()) await supabaseService.upsertGroup(newGroup);
                 setGroups(prev => [newGroup, ...prev]);
               }}
               onUpdateGroup={async g => { 
-                await supabaseService.upsertGroup(g);
+                if (supabaseService.isConfigured()) await supabaseService.upsertGroup(g);
                 setGroups(prev => prev.map(item => item.id === g.id ? g : item));
-              }} 
+              }}
               onDeleteGroup={async id => { 
-                await supabaseService.deleteGroup(id);
+                if (supabaseService.isConfigured()) await supabaseService.deleteGroup(id);
                 setGroups(prev => prev.filter(g => g.id !== id));
               }}
               onAddEndpoint={async e => { 
                 const newEp = { ...e, id: `${Date.now()}`, status: EndpointStatus.DISCONNECTED, lastConnected: 'N/A' };
-                await supabaseService.upsertEndpoint(newEp);
+                if (supabaseService.isConfigured()) await supabaseService.upsertEndpoint(newEp);
                 setEndpoints(prev => [...prev, newEp]);
               }}
               onUpdateEndpoint={async (e) => {
-                await supabaseService.upsertEndpoint(e);
+                if (supabaseService.isConfigured()) await supabaseService.upsertEndpoint(e);
                 setEndpoints(prev => prev.map(item => item.id === e.id ? e : item));
               }}
               onDeleteEndpoint={async id => { 
-                await supabaseService.deleteEndpoint(id);
+                if (supabaseService.isConfigured()) await supabaseService.deleteEndpoint(id);
                 setEndpoints(prev => prev.filter(e => e.id !== id));
               }}
               onUpdateSettings={async s => {
-                try {
-                  await supabaseService.updateSettings(s);
-                } catch (err) {
-                  console.error("Lỗi cập nhật cấu hình:", err);
+                if (supabaseService.isConfigured()) {
+                  try {
+                    await supabaseService.updateSettings(s);
+                  } catch (err) {
+                    console.error("Lỗi cập nhật cấu hình lên Cloud:", err);
+                  }
                 }
                 setSystemSettings(s);
                 storageService.saveSystemSettings(s);
@@ -753,13 +635,13 @@ const App: React.FC = () => {
           />}
           {activeTab === 'accounts' && <UserManagement users={users} currentUser={currentUser!} onAddUser={async u => {
               const newUser = { ...u, id: `${Date.now()}` };
-              await supabaseService.upsertUser(newUser);
+              if (supabaseService.isConfigured()) await supabaseService.upsertUser(newUser);
               setUsers(prev => [...prev, newUser]);
           }} onUpdateUser={async u => {
-              await supabaseService.upsertUser(u);
+              if (supabaseService.isConfigured()) await supabaseService.upsertUser(u);
               setUsers(prev => prev.map(item => item.id === u.id ? u : item));
           }} onDeleteUser={async id => {
-              await supabaseService.deleteUser(id);
+              if (supabaseService.isConfigured()) await supabaseService.deleteUser(id);
               setUsers(prev => prev.filter(u => u.id !== id));
           }} />}
           {activeTab === 'deployment' && <ExportPage />}
@@ -780,32 +662,9 @@ const App: React.FC = () => {
 
       {selectedMeeting && <MeetingDetailModal meeting={selectedMeeting} onClose={() => setSelectedMeeting(null)} onUpdate={handleUpdateMeeting} />}
       {isCreateModalOpen && <CreateMeetingModal isOpen={isCreateModalOpen} onClose={() => { setIsCreateModalOpen(false); setEditingMeeting(null); }} onCreate={async (m) => {
-        const newMeeting: Meeting = { 
-          ...m, 
-          id: m.id || `MEET-${Date.now()}`, 
-          status: 'SCHEDULED',
-          updatedAt: new Date().toISOString()
-        };
-        
-        // 1. Save locally first
-        setMeetings(prev => {
-          const updated = [newMeeting, ...prev];
-          storageService.saveMeetings(updated);
-          return updated;
-        });
-        
-        // 2. Sync to cloud
-        try {
-          await supabaseService.upsertMeeting(newMeeting);
-          setLastRefreshed(new Date());
-        } catch (err: any) {
-          console.error("Lưu thất bại:", err);
-          if (supabaseService.isConfigured()) {
-            alert(`Lưu lên Cloud thất bại: ${err.message || 'Lỗi không xác định'}. Dữ liệu vẫn được lưu tạm thời.`);
-          }
-        }
-        
-        setIsCreateModalOpen(false);
+        const newMeeting: Meeting = { ...m, id: m.id || `MEET-${Date.now()}`, status: 'SCHEDULED' };
+        setMeetings(prev => [newMeeting, ...prev]);
+        if (supabaseService.isConfigured()) await supabaseService.upsertMeeting(newMeeting);
       }} onUpdate={handleUpdateMeeting} units={units} staff={staff} availableEndpoints={endpoints} editingMeeting={editingMeeting} />}
       
       {isChangePasswordOpen && currentUser && (

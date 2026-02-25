@@ -17,20 +17,15 @@ const MonitoringGrid: React.FC<MonitoringGridProps> = ({ endpoints, onUpdateEndp
   const [currentPage, setCurrentPage] = useState(1);
 
   const locations = useMemo(() => {
-    if (!Array.isArray(endpoints)) return [];
-    return Array.from(new Set(endpoints.filter(e => e && e.location).map(e => e.location))).sort();
+    return Array.from(new Set(endpoints.map(e => e.location))).sort();
   }, [endpoints]);
 
   const filteredEndpoints = useMemo(() => {
-    if (!Array.isArray(endpoints)) return [];
     return endpoints.filter(ep => {
-      if (!ep) return false;
       const matchesStatus = statusFilter === 'ALL' || ep.status === statusFilter;
       const matchesLocation = locationFilter === 'ALL' || ep.location === locationFilter;
-      const name = ep.name || '';
-      const location = ep.location || '';
-      const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                            location.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = ep.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            ep.location.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesStatus && matchesLocation && matchesSearch;
     });
   }, [endpoints, statusFilter, locationFilter, searchTerm]);
@@ -209,10 +204,10 @@ const MonitoringGrid: React.FC<MonitoringGridProps> = ({ endpoints, onUpdateEndp
 
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-black text-gray-900 truncate group-hover:text-blue-600 transition-colors leading-tight uppercase tracking-tight">{ep.name}</h4>
-                    <div className="text-[10px] text-gray-500 truncate uppercase font-bold tracking-widest mt-1.5 flex items-center gap-1.5">
+                    <p className="text-[10px] text-gray-500 truncate uppercase font-bold tracking-widest mt-1.5 flex items-center gap-1.5">
                       <div className="w-1 h-1 rounded-full bg-gray-300"></div>
                       {ep.location}
-                    </div>
+                    </p>
                   </div>
 
                   <div className="pt-3 border-t border-black/5 flex items-center justify-between">

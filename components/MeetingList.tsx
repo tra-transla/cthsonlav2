@@ -48,21 +48,14 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
   };
 
   const filteredAndSortedMeetings = useMemo(() => {
-    if (!Array.isArray(meetings)) return [];
     return [...meetings]
       .filter(m => {
-        if (!m) return false;
-        const title = m.title || '';
-        const hostUnit = m.hostUnit || '';
-        const chairPerson = m.chairPerson || '';
-
         const matchesSearch = 
-          title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          hostUnit.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          chairPerson.toLowerCase().includes(searchTerm.toLowerCase());
+          m.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          m.hostUnit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          m.chairPerson.toLowerCase().includes(searchTerm.toLowerCase());
         
-        const startTime = m.startTime || new Date().toISOString();
-        const meetingDate = new Date(startTime).setHours(0, 0, 0, 0);
+        const meetingDate = new Date(m.startTime).setHours(0, 0, 0, 0);
         const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
         const end = endDate ? new Date(endDate).setHours(0, 0, 0, 0) : null;
 
@@ -72,16 +65,11 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
         return matchesSearch && matchesStartDate && matchesEndDate;
       })
       .sort((a, b) => {
-        if (!a || !b) return 0;
         let comparison = 0;
         if (sortField === 'startTime') {
-          const timeA = a.startTime ? new Date(a.startTime).getTime() : 0;
-          const timeB = b.startTime ? new Date(b.startTime).getTime() : 0;
-          comparison = timeA - timeB;
+          comparison = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
         } else {
-          const valA = String(a[sortField] || '');
-          const valB = String(b[sortField] || '');
-          comparison = valA.localeCompare(valB, 'vi');
+          comparison = (a[sortField] || '').localeCompare(b[sortField] || '', 'vi');
         }
         return sortOrder === 'asc' ? comparison : -comparison;
       });
@@ -117,17 +105,9 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
 
     const header = "Tiêu đề,Đơn vị chủ trì,Cán bộ chủ trì,Thời gian bắt đầu,Thời gian kết thúc,Số điểm cầu,Trạng thái,Giấy mời,Mô tả\n";
     const rows = filteredAndSortedMeetings.map(m => {
-      if (!m) return "";
       const status = m.status === 'CANCELLED' ? 'Đã huỷ' : m.status === 'POSTPONED' ? 'Tạm hoãn' : 'Bình thường';
-      const title = (m.title || '').replace(/"/g, '""');
-      const hostUnit = (m.hostUnit || '').replace(/"/g, '""');
-      const chairPerson = (m.chairPerson || '').replace(/"/g, '""');
-      const startTime = m.startTime ? new Date(m.startTime).toLocaleString('vi-VN', { hour12: false }) : 'N/A';
-      const endTime = m.endTime ? new Date(m.endTime).toLocaleString('vi-VN', { hour12: false }) : 'N/A';
-      const epCount = Array.isArray(m.endpoints) ? m.endpoints.length : 0;
-      
-      return `"${title}","${hostUnit}","${chairPerson}","${startTime}","${endTime}","${epCount}","${status}","${m.invitationLink || ''}","${(m.description || '').replace(/"/g, '""')}"`;
-    }).filter(row => row !== "").join("\n");
+      return `"${m.title.replace(/"/g, '""')}","${m.hostUnit.replace(/"/g, '""')}","${m.chairPerson.replace(/"/g, '""')}","${new Date(m.startTime).toLocaleString('vi-VN', { hour12: false })}","${new Date(m.endTime).toLocaleString('vi-VN', { hour12: false })}","${m.endpoints.length}","${status}","${m.invitationLink || ''}","${(m.description || '').replace(/"/g, '""')}"`;
+    }).join("\n");
     
     const csvContent = "\uFEFF" + header + rows;
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -384,58 +364,42 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                         <ExternalLink size={14} strokeWidth={3} />
                       </button>
 
-                      {(isAdmin || onDelete) && (
+                      {isAdmin && (
                         <div className="flex items-center gap-1.5 border-l border-gray-100 pl-1.5">
                           <button 
-                            onClick={(e) => { 
-                              e.preventDefault();
-                              e.stopPropagation(); 
-                              onEdit?.(meeting); 
-                            }}
-                            className="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 shadow-sm disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed active:scale-90"
+                            onClick={(e) => { e.stopPropagation(); onEdit?.(meeting); }}
+                            className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
                             title="Chỉnh sửa"
                             disabled={isSpecial}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                           </button>
                           
                           <button 
-                            onClick={(e) => { 
-                              e.preventDefault();
-                              e.stopPropagation(); 
-                              setActionMeeting({ meeting, type: 'POSTPONE' }); 
-                            }}
-                            className="p-2.5 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl transition-all border border-amber-100 shadow-sm disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed active:scale-90"
+                            onClick={(e) => { e.stopPropagation(); setActionMeeting({ meeting, type: 'POSTPONE' }); }}
+                            className="p-2 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl transition-all border border-amber-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
                             title="Hoãn lịch họp"
                             disabled={isSpecial}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                           </button>
 
                           <button 
-                            onClick={(e) => { 
-                              e.preventDefault();
-                              e.stopPropagation(); 
-                              setActionMeeting({ meeting, type: 'CANCEL' }); 
-                            }}
-                            className="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 shadow-sm disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed active:scale-90"
+                            onClick={(e) => { e.stopPropagation(); setActionMeeting({ meeting, type: 'CANCEL' }); }}
+                            className="p-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
                             title="Huỷ lịch họp"
                             disabled={isSpecial}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
                           </button>
 
                           {onDelete && (
                             <button 
-                              onClick={(e) => { 
-                                e.preventDefault();
-                                e.stopPropagation(); 
-                                onDelete(meeting.id); 
-                              }}
-                              className="p-2.5 bg-slate-100 text-slate-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-slate-200 shadow-sm active:scale-90"
+                              onClick={(e) => { e.stopPropagation(); onDelete(meeting.id); }}
+                              className="p-2 bg-slate-100 text-slate-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-slate-200"
                               title="Xóa vĩnh viễn"
                             >
-                              <Trash2 size={16} strokeWidth={2.5} />
+                              <Trash2 size={14} />
                             </button>
                           )}
                         </div>

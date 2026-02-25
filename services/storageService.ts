@@ -1,5 +1,6 @@
 
 import { Meeting, Unit, Staff, ParticipantGroup, User, Endpoint, SavedReportConfig, SystemSettings } from '../types';
+import { MOCK_MEETINGS, MOCK_UNITS, MOCK_STAFF, MOCK_PARTICIPANT_GROUPS, MOCK_USERS, MOCK_ENDPOINTS } from '../constants';
 
 const DB_KEYS = {
   MEETINGS: 'cth_sla_meetings',
@@ -20,105 +21,62 @@ const DEFAULT_SETTINGS: SystemSettings = {
 
 export const storageService = {
   init() {
-    if (typeof window === 'undefined' || !window.localStorage) {
-      console.warn("localStorage is not available in this environment.");
-      return;
+    if (!localStorage.getItem(DB_KEYS.UNITS)) {
+      localStorage.setItem(DB_KEYS.UNITS, JSON.stringify(MOCK_UNITS));
     }
-    try {
-      if (!localStorage.getItem(DB_KEYS.UNITS)) {
-        localStorage.setItem(DB_KEYS.UNITS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.STAFF)) {
-        localStorage.setItem(DB_KEYS.STAFF, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.GROUPS)) {
-        localStorage.setItem(DB_KEYS.GROUPS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.USERS)) {
-        localStorage.setItem(DB_KEYS.USERS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.MEETINGS)) {
-        localStorage.setItem(DB_KEYS.MEETINGS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.ENDPOINTS)) {
-        localStorage.setItem(DB_KEYS.ENDPOINTS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.SAVED_REPORTS)) {
-        localStorage.setItem(DB_KEYS.SAVED_REPORTS, JSON.stringify([]));
-      }
-      if (!localStorage.getItem(DB_KEYS.SYSTEM_SETTINGS)) {
-        localStorage.setItem(DB_KEYS.SYSTEM_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
-      }
-    } catch (e) {
-      console.warn("localStorage is not available or quota exceeded:", e);
+    if (!localStorage.getItem(DB_KEYS.STAFF)) {
+      localStorage.setItem(DB_KEYS.STAFF, JSON.stringify(MOCK_STAFF));
+    }
+    if (!localStorage.getItem(DB_KEYS.GROUPS)) {
+      localStorage.setItem(DB_KEYS.GROUPS, JSON.stringify(MOCK_PARTICIPANT_GROUPS));
+    }
+    if (!localStorage.getItem(DB_KEYS.USERS)) {
+      localStorage.setItem(DB_KEYS.USERS, JSON.stringify(MOCK_USERS));
+    }
+    if (!localStorage.getItem(DB_KEYS.MEETINGS)) {
+      localStorage.setItem(DB_KEYS.MEETINGS, JSON.stringify(MOCK_MEETINGS));
+    }
+    if (!localStorage.getItem(DB_KEYS.ENDPOINTS)) {
+      localStorage.setItem(DB_KEYS.ENDPOINTS, JSON.stringify(MOCK_ENDPOINTS));
+    }
+    if (!localStorage.getItem(DB_KEYS.SAVED_REPORTS)) {
+      localStorage.setItem(DB_KEYS.SAVED_REPORTS, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(DB_KEYS.SYSTEM_SETTINGS)) {
+      localStorage.setItem(DB_KEYS.SYSTEM_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
     }
   },
 
   getData<T>(key: string, defaultValue: T): T {
-    try {
-      const data = localStorage.getItem(key);
-      if (!data) return defaultValue;
-      const parsed = JSON.parse(data);
-      return parsed === null ? defaultValue : (parsed as T);
-    } catch (e) {
-      console.error(`Error reading ${key} from localStorage:`, e);
-      return defaultValue;
-    }
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : defaultValue;
   },
 
   saveData<T>(key: string, data: T): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-      console.error(`Error saving ${key} to localStorage:`, e);
-    }
+    localStorage.setItem(key, JSON.stringify(data));
   },
 
-  getMeetings(): Meeting[] { 
-    const data = this.getData(DB_KEYS.MEETINGS, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getMeetings(): Meeting[] { return this.getData(DB_KEYS.MEETINGS, MOCK_MEETINGS); },
   saveMeetings(data: Meeting[]) { this.saveData(DB_KEYS.MEETINGS, data); },
 
-  getUnits(): Unit[] { 
-    const data = this.getData(DB_KEYS.UNITS, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getUnits(): Unit[] { return this.getData(DB_KEYS.UNITS, MOCK_UNITS); },
   saveUnits(data: Unit[]) { this.saveData(DB_KEYS.UNITS, data); },
 
-  getStaff(): Staff[] { 
-    const data = this.getData(DB_KEYS.STAFF, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getStaff(): Staff[] { return this.getData(DB_KEYS.STAFF, MOCK_STAFF); },
   saveStaff(data: Staff[]) { this.saveData(DB_KEYS.STAFF, data); },
 
-  getGroups(): ParticipantGroup[] { 
-    const data = this.getData(DB_KEYS.GROUPS, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getGroups(): ParticipantGroup[] { return this.getData(DB_KEYS.GROUPS, MOCK_PARTICIPANT_GROUPS); },
   saveGroups(data: ParticipantGroup[]) { this.saveData(DB_KEYS.GROUPS, data); },
 
-  getUsers(): User[] { 
-    const data = this.getData(DB_KEYS.USERS, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getUsers(): User[] { return this.getData(DB_KEYS.USERS, MOCK_USERS); },
   saveUsers(data: User[]) { this.saveData(DB_KEYS.USERS, data); },
 
-  getEndpoints(): Endpoint[] { 
-    const data = this.getData(DB_KEYS.ENDPOINTS, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getEndpoints(): Endpoint[] { return this.getData(DB_KEYS.ENDPOINTS, MOCK_ENDPOINTS); },
   saveEndpoints(data: Endpoint[]) { this.saveData(DB_KEYS.ENDPOINTS, data); },
 
-  getSavedReports(): SavedReportConfig[] { 
-    const data = this.getData(DB_KEYS.SAVED_REPORTS, []); 
-    return Array.isArray(data) ? data : [];
-  },
+  getSavedReports(): SavedReportConfig[] { return this.getData(DB_KEYS.SAVED_REPORTS, []); },
   saveSavedReports(data: SavedReportConfig[]) { this.saveData(DB_KEYS.SAVED_REPORTS, data); },
 
-  getSystemSettings(): SystemSettings { 
-    const data = this.getData(DB_KEYS.SYSTEM_SETTINGS, DEFAULT_SETTINGS); 
-    return (data && typeof data === 'object' && !Array.isArray(data)) ? data : DEFAULT_SETTINGS;
-  },
+  getSystemSettings(): SystemSettings { return this.getData(DB_KEYS.SYSTEM_SETTINGS, DEFAULT_SETTINGS); },
   saveSystemSettings(data: SystemSettings) { this.saveData(DB_KEYS.SYSTEM_SETTINGS, data); }
 };

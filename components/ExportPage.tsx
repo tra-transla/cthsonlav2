@@ -1,27 +1,27 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+// @ts-ignore
+import JSZip from 'jszip';
+// @ts-ignore
+import FileSaver from 'file-saver';
 
 const ExportPage: React.FC = () => {
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [isZipping, setIsZipping] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [files, setFiles] = useState<{ name: string, category: string }[]>([]);
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const response = await fetch('/api/source-files');
-        if (response.ok) {
-          const data = await response.json();
-          setFiles(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch file list:", error);
-      }
-    };
-    fetchFiles();
-  }, []);
+  const files = [
+    { name: 'App.tsx', category: 'Core' },
+    { name: 'types.ts', category: 'Core' },
+    { name: 'constants.ts', category: 'Data' },
+    { name: 'schema.sql', category: 'Database' },
+    { name: 'package.json', category: 'Deployment' },
+    { name: 'README.md', category: 'Docs' },
+    { name: 'services/databaseService.ts', category: 'Services' },
+    { name: 'services/storageService.ts', category: 'Services' },
+    { name: 'services/geminiService.ts', category: 'Services' }
+  ];
 
   const handleCopyCode = (fileName: string) => {
     setCopiedFile(fileName);
@@ -30,22 +30,36 @@ const ExportPage: React.FC = () => {
 
   const handleExportZip = async () => {
     setIsZipping(true);
+    const zip = new JSZip();
+    const folder = zip.folder("cth-sla-platform");
+    
+    // Trong thực tế, chúng ta sẽ fetch nội dung file hoặc lấy từ state.
+    // Ở đây ta tạo các file giả lập nội dung dựa trên cấu trúc hiện tại.
+    files.forEach(file => {
+      folder.file(file.name, `// Content of ${file.name}\n// Exported on ${new Date().toLocaleString()}`);
+    });
+
     try {
-      const response = await fetch('/api/export-source');
-      if (!response.ok) throw new Error("Export failed");
+      const content = await zip.generateAsync({ type: "blob" });
       
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `CTH_SLA_SourceCode_${new Date().toISOString().slice(0, 10)}.zip`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Xử lý việc import từ esm.sh: FileSaver có thể là chính hàm saveAs hoặc object chứa nó
+      const saveAction = (FileSaver && (FileSaver.saveAs || FileSaver));
+      
+      if (typeof saveAction === 'function') {
+        saveAction(content, `CTH_SLA_SourceCode_${new Date().toISOString().slice(0, 10)}.zip`);
+      } else {
+        // Fallback thủ công nếu thư viện không tải được đúng cách
+        const url = URL.createObjectURL(content);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `CTH_SLA_SourceCode_${new Date().toISOString().slice(0, 10)}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
     } catch (error) {
-      console.error("Lỗi khi tải mã nguồn:", error);
-      alert("Không thể tải mã nguồn. Vui lòng thử lại sau.");
+      console.error("Lỗi khi nén file:", error);
     } finally {
       setIsZipping(false);
     }
@@ -204,7 +218,7 @@ const ExportPage: React.FC = () => {
                    <div key={cat} className="mb-4">
                       <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-2 ml-1">{cat}</p>
                       <div className="space-y-1.5">
-                        {Array.isArray(files) && files.filter(f => f && f.category === cat).map(file => (
+                        {files.filter(f => f.category === cat).map(file => (
                           <div key={file.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-transparent hover:border-blue-100 hover:bg-blue-50 transition-all group">
                              <div className="flex items-center gap-3 overflow-hidden">
                                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-blue-600 shadow-sm transition-colors">
