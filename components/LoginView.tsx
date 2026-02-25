@@ -8,9 +8,16 @@ interface LoginViewProps {
   meetings: Meeting[];
   onLoginSuccess: (user: User) => void;
   systemSettings: SystemSettings;
+  isSyncing?: boolean;
+  isCloudConnected?: boolean;
+  lastRefreshed?: Date;
+  onSync?: () => void;
 }
 
-const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, systemSettings }) => {
+const LoginView: React.FC<LoginViewProps> = ({ 
+  users, meetings, onLoginSuccess, systemSettings,
+  isSyncing = false, isCloudConnected = false, lastRefreshed = new Date(), onSync
+}) => {
   console.log("LoginView rendering with:", { 
     usersCount: users?.length, 
     meetingsCount: meetings?.length, 
@@ -38,6 +45,8 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
       return [];
     }
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Bắt đầu ngày hôm nay
+    
     return meetings
       .filter(m => m && m.startTime && m.endTime && new Date(m.endTime) >= today)
       .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
@@ -273,7 +282,19 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
 
           <div className={`${!showLoginForm ? 'bg-transparent border-none shadow-none' : 'bg-white/10 backdrop-blur-[30px] rounded-[2.5rem] p-8 lg:p-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20'} w-full flex flex-col relative overflow-hidden group transition-all duration-500`}>
             {!showLoginForm ? (
-              <div className="flex flex-col items-center justify-center py-2">
+              <div className="flex flex-col items-center justify-center py-2 space-y-4">
+                {/* Sync Status for Public View */}
+                <div 
+                  className={`flex items-center gap-2 px-4 py-1.5 rounded-full border cursor-pointer transition-all hover:bg-white/5 ${isCloudConnected ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-amber-500/10 border-amber-500/20'}`}
+                  onClick={onSync}
+                  title="Nhấn để đồng bộ dữ liệu mới nhất"
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${isSyncing ? 'bg-blue-400 animate-spin' : isCloudConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></div>
+                  <span className="text-[8px] font-black uppercase tracking-[0.2em] text-white/60">
+                    {isSyncing ? 'Đang đồng bộ...' : isCloudConnected ? `Cloud Connected • ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}` : 'Local Mode (Offline)'}
+                  </span>
+                </div>
+
                 <button 
                   onClick={() => setShowLoginForm(true)}
                   className="group relative px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all hover:shadow-[0_0_30px_rgba(37,99,235,0.4)] active:scale-95 flex items-center gap-3 shadow-xl"

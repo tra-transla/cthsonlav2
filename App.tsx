@@ -123,7 +123,10 @@ const App: React.FC = () => {
         } else {
           const cloudDate = cloudItem.updatedAt ? new Date(cloudItem.updatedAt).getTime() : 0;
           const localDate = localItem.updatedAt ? new Date(localItem.updatedAt).getTime() : 0;
-          if (cloudDate >= localDate) mergedMap.set(cloudItem.id, cloudItem);
+          // Prioritize cloud if it's newer OR if local has no timestamp (initial data)
+          if (cloudDate >= localDate || !localItem.updatedAt) {
+            mergedMap.set(cloudItem.id, cloudItem);
+          }
         }
       });
     }
@@ -413,7 +416,16 @@ const App: React.FC = () => {
 
   if (!currentUser) return (
     <>
-      <LoginView users={users} meetings={meetings} onLoginSuccess={setCurrentUser} systemSettings={systemSettings} />
+      <LoginView 
+        users={users} 
+        meetings={meetings} 
+        onLoginSuccess={setCurrentUser} 
+        systemSettings={systemSettings} 
+        isSyncing={isSyncing}
+        isCloudConnected={supabaseService.isConfigured()}
+        lastRefreshed={lastRefreshed}
+        onSync={syncData}
+      />
       {showToast && currentAlertMeeting && (
         <NotificationToast 
           meeting={currentAlertMeeting} 

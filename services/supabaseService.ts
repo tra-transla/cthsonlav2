@@ -31,11 +31,11 @@ const isValidUrl = (url: string) => {
   }
 };
 
-const supabaseUrl = getEnv('SUPABASE_URL');
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
+const supabaseUrl = getEnv('SUPABASE_URL') || "https://uhaqofhnfetdkciaswof.supabase.co";
+const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY') || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVoYXFvZmhuZmV0ZGtjaWFzd29mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMzE5MDEsImV4cCI6MjA4NDYwNzkwMX0.6wHHnIM8d9x0Yvd58BsumxTx3lUr_EZjX0PM5MWFHqA";
 
 // Only initialize Supabase if the URL looks valid and is not a placeholder
-export const supabase = (supabaseUrl && isValidUrl(supabaseUrl) && supabaseAnonKey) 
+export const supabase = (supabaseUrl && isValidUrl(supabaseUrl) && supabaseAnonKey && !supabaseAnonKey.includes('YOUR_')) 
   ? createClient(supabaseUrl, supabaseAnonKey) 
   : null;
 
