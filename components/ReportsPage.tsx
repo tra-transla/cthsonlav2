@@ -316,8 +316,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
             </div>
             
             {/* Modal Content - Scrollable Preview */}
-            <div className="flex-1 overflow-y-auto p-8 bg-gray-200/50 custom-scrollbar">
-              <div className="max-w-[1100px] mx-auto shadow-2xl origin-top scale-[0.85] lg:scale-100 transition-transform">
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-200/50 custom-scrollbar">
+              <div className="w-full mx-auto shadow-2xl transition-transform">
                 {/* We render the same content as reportRef here, but without the ref to avoid conflicts if needed, 
                     or we can just let it be. Actually, we want the preview to look exactly like the PDF. */}
                 <ReportContent 
@@ -362,7 +362,7 @@ const ReportContent: React.FC<{
   currentUser?: User | null;
 }> = ({ reportStats, startDate, endDate, groupBy, statsData, filteredMeetings, currentUser }) => {
   return (
-    <div className="bg-white rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 min-h-[1000px] pdf-safe text-slate-900 pdf-report-content w-full max-w-[1100px] mx-auto">
+    <div className="bg-white rounded-[2rem] shadow-sm p-6 md:p-10 space-y-10 border border-gray-50 min-h-[1000px] pdf-safe text-slate-900 pdf-report-content w-full mx-auto">
       {/* Header */}
       <div className="text-center mb-8 border-b-2 border-slate-900 pb-8">
         <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Báo cáo Thống kê Hội nghị</h1>
