@@ -445,7 +445,7 @@ const ReportContent: React.FC<{
         </h3>
         <div className="border border-slate-100 rounded-2xl overflow-hidden">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
+            <thead className="bg-white text-slate-900 border-b-2 border-slate-900 text-[10px] uppercase font-black tracking-widest">
               <tr>
                 <th className="px-6 py-4">Tiêu chí phân nhóm</th>
                 <th className="px-6 py-4 text-center">Số lượng hội nghị</th>
@@ -473,7 +473,7 @@ const ReportContent: React.FC<{
         </h3>
         <div className="border border-slate-100 rounded-2xl overflow-hidden">
           <table className="w-full text-left text-[11px]">
-            <thead className="bg-slate-50 text-slate-500 text-[9px] uppercase font-black tracking-widest">
+            <thead className="bg-white text-slate-900 border-b border-slate-200 text-[9px] uppercase font-black tracking-widest">
               <tr>
                 <th className="px-4 py-3"><div className="flex items-center gap-1"><FileText size={10} /> Tên hội nghị</div></th>
                 <th className="px-4 py-3"><div className="flex items-center gap-1"><Building2 size={10} /> Đơn vị chủ trì</div></th>
