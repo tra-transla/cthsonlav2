@@ -213,37 +213,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
           </div>
         </div>
 
-        {/* Thống kê Tổng hợp (Tuần, Tháng, Năm) */}
-        <div className="bg-slate-900 p-8 rounded-[2rem] text-white">
-          <div className="flex items-center gap-3 mb-6">
-            <TrendingUp className="text-blue-400" />
-            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-white/60">Thống kê theo chu kỳ (Toàn hệ thống)</h3>
-          </div>
-          <div className="grid grid-cols-3 gap-8">
-            <div className="space-y-2">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Cuộc họp Tuần này</p>
-               <div className="flex items-baseline gap-2">
-                 <span className="text-4xl font-black text-blue-400">{reportStats.currentWeekCount}</span>
-                 <span className="text-[10px] font-bold text-white/20 uppercase">Hội nghị</span>
-               </div>
-            </div>
-            <div className="space-y-2 border-l border-white/10 pl-8">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Cuộc họp Tháng này</p>
-               <div className="flex items-baseline gap-2">
-                 <span className="text-4xl font-black text-emerald-400">{reportStats.currentMonthCount}</span>
-                 <span className="text-[10px] font-bold text-white/20 uppercase">Hội nghị</span>
-               </div>
-            </div>
-            <div className="space-y-2 border-l border-white/10 pl-8">
-               <p className="text-[10px] font-black uppercase tracking-widest text-white/40">Cuộc họp Năm nay</p>
-               <div className="flex items-baseline gap-2">
-                 <span className="text-4xl font-black text-amber-400">{reportStats.currentYearCount}</span>
-                 <span className="text-[10px] font-bold text-white/20 uppercase">Hội nghị</span>
-               </div>
-            </div>
-          </div>
-        </div>
-
         {/* Charts Section */}
         <div className="grid grid-cols-1 gap-10">
           <div className="space-y-4">
