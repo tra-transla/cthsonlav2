@@ -52,7 +52,7 @@ const MeetingDetailModal: React.FC<MeetingDetailModalProps> = ({ meeting, onClos
 
   const handleUpdateMeeting = (updatedMeeting: Meeting) => {
     if (onUpdate) {
-      onUpdate(updatedMeeting);
+      return onUpdate(updatedMeeting);
     }
   };
 

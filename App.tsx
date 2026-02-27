@@ -140,12 +140,9 @@ const App: React.FC = () => {
           supabaseService.getSettings()
         ]);
 
-        // Chỉ cập nhật nếu có dữ liệu từ Cloud hoặc nếu local đang trống
-        // Điều này tránh việc ghi đè dữ liệu local bằng mảng trống nếu Cloud fetch lỗi (dù đã có catch)
-        if (cloudMeetings.length > 0 || meetings.length === 0) {
-          setMeetings(cloudMeetings); 
-          storageService.saveMeetings(cloudMeetings);
-        }
+        // Cập nhật dữ liệu từ Cloud vào State và Local Storage
+        setMeetings(cloudMeetings); 
+        storageService.saveMeetings(cloudMeetings);
         
         setEndpoints(cloudEndpoints); storageService.saveEndpoints(cloudEndpoints);
         setUnits(cloudUnits); storageService.saveUnits(cloudUnits);
@@ -331,8 +328,10 @@ const App: React.FC = () => {
     if (supabaseService.isConfigured()) {
       try { 
         await supabaseService.upsertMeeting(meeting); 
+        console.log("Cập nhật Cloud thành công");
       } catch (err) { 
         console.error("Cập nhật Cloud thất bại:", err); 
+        alert("Lỗi đồng bộ Cloud: " + (err instanceof Error ? err.message : "Vui lòng kiểm tra lại cấu hình Database."));
       }
     }
   };

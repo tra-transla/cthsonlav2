@@ -14,40 +14,46 @@ export const supabase = supabaseUrl && supabaseAnonKey
 const mapMeeting = (m: any): Meeting => ({
   id: m.id,
   title: m.title || 'Không có tiêu đề',
-  hostUnit: m.host_unit_name || m.host_unit || m.hostUnit || 'N/A',
-  hostUnitId: m.host_unit_id || m.hostUnitId || null,
-  chairPerson: m.chair_person_name || m.chair_person || m.chairPerson || 'N/A',
-  chairPersonId: m.chair_person_id || m.chairPersonId || null,
-  startTime: m.start_time || m.startTime || new Date().toISOString(),
-  endTime: m.end_time || m.endTime || new Date().toISOString(),
+  hostUnit: m.host_unit_name || 'N/A',
+  hostUnitId: m.host_unit_id || undefined,
+  chairPerson: m.chair_person_name || 'N/A',
+  chairPersonId: m.chair_person_id || undefined,
+  startTime: m.start_time || new Date().toISOString(),
+  endTime: m.end_time || new Date().toISOString(),
   description: m.description || '',
   participants: Array.isArray(m.participants) ? m.participants : [],
   endpoints: Array.isArray(m.endpoints) ? m.endpoints : [],
   notes: m.notes || '',
-  endpointChecks: m.endpoint_checks || m.endpointChecks || {},
+  endpointChecks: m.endpoint_checks || {},
   status: m.status || 'SCHEDULED',
-  cancelReason: m.cancel_reason || m.cancelReason || '',
-  invitationLink: m.invitation_link || m.invitationLink || ''
+  cancelReason: m.cancel_reason || '',
+  invitationLink: m.invitation_link || ''
 });
 
-const unmapMeeting = (m: Meeting) => ({
-  id: m.id,
-  title: m.title,
-  host_unit_name: m.hostUnit,
-  host_unit_id: m.hostUnitId || null,
-  chair_person_name: m.chairPerson,
-  chair_person_id: m.chairPersonId || null,
-  start_time: m.startTime,
-  end_time: m.endTime,
-  description: m.description,
-  participants: m.participants,
-  endpoints: m.endpoints,
-  notes: m.notes || null,
-  endpoint_checks: m.endpointChecks || {},
-  status: m.status || 'SCHEDULED',
-  cancel_reason: m.cancelReason || null,
-  invitation_link: m.invitationLink || null
-});
+const unmapMeeting = (m: Meeting) => {
+  const payload: any = {
+    id: m.id,
+    title: m.title,
+    host_unit_name: m.hostUnit,
+    chair_person_name: m.chairPerson,
+    start_time: m.startTime,
+    end_time: m.endTime,
+    description: m.description,
+    participants: m.participants,
+    endpoints: m.endpoints,
+    notes: m.notes || null,
+    endpoint_checks: m.endpointChecks || {},
+    status: m.status || 'SCHEDULED',
+    cancel_reason: m.cancelReason || null,
+    invitation_link: m.invitationLink || null
+  };
+
+  // Chỉ thêm các trường ID nếu chúng có giá trị để tránh lỗi nếu cột chưa tồn tại trong DB
+  if (m.hostUnitId) payload.host_unit_id = m.hostUnitId;
+  if (m.chairPersonId) payload.chair_person_id = m.chairPersonId;
+
+  return payload;
+};
 
 const mapEndpoint = (e: any): Endpoint => ({
   id: e.id,
