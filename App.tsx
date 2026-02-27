@@ -4,7 +4,10 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
   AreaChart, Area, Legend
 } from 'recharts';
-import { LayoutDashboard, CalendarDays, MonitorPlay, FileText, Settings, Users, Share2, LogOut, Menu, X, Activity, BarChart3, Building2, User as UserIcon, Clock, Zap, Target, ShieldEllipsis, Bell, Video } from 'lucide-react';
+import { 
+  LayoutDashboard, CalendarDays, MonitorPlay, FileText, Settings, Users, Share2, LogOut, Menu, X, Activity, BarChart3, Building2, User as UserIcon, Clock, Zap, Target, ShieldEllipsis, Bell, Video,
+  Sun, Moon
+} from 'lucide-react';
 import { Meeting, Endpoint, EndpointStatus, Unit, Staff, ParticipantGroup, User, SystemSettings } from './types';
 import StatCard from './components/StatCard';
 import MeetingList from './components/MeetingList';
@@ -30,6 +33,13 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'meetings' | 'monitoring' | 'management' | 'accounts' | 'reports' | 'deployment'>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
   
   const [meetings, setMeetings] = useState<Meeting[]>(() => storageService.getMeetings());
   const [endpoints, setEndpoints] = useState<Endpoint[]>(() => storageService.getEndpoints());
@@ -63,6 +73,17 @@ const App: React.FC = () => {
       Notification.requestPermission();
     }
   }, []);
+
+  // Cập nhật class dark cho html element
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
 
   // Logic kiểm tra nhắc nhở định kỳ (mỗi 1 phút) - Chạy cả khi chưa login
   useEffect(() => {
@@ -346,7 +367,14 @@ const App: React.FC = () => {
 
   if (!currentUser) return (
     <>
-      <LoginView users={users} meetings={meetings} onLoginSuccess={setCurrentUser} systemSettings={systemSettings} />
+      <LoginView 
+        users={users} 
+        meetings={meetings} 
+        onLoginSuccess={setCurrentUser} 
+        systemSettings={systemSettings} 
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(!isDarkMode)}
+      />
       {showToast && currentAlertMeeting && (
         <NotificationToast 
           meeting={currentAlertMeeting} 
@@ -363,74 +391,82 @@ const App: React.FC = () => {
   const primaryTextStyle = { color: systemSettings.primaryColor };
 
   return (
-    <div className="min-h-screen flex bg-gray-50 overflow-hidden relative">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-slate-950 overflow-hidden relative transition-colors duration-300">
       {isSidebarOpen && (
         <div className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
       )}
 
-      <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-slate-900 text-white flex flex-col shadow-2xl flex-shrink-0 z-30 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col shadow-2xl flex-shrink-0 z-30 transform transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-gray-100 dark:border-slate-800 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-6 flex justify-between items-center">
           <div className="flex items-center gap-3 min-w-0">
-             <div className="w-10 h-10 bg-slate-800 border border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+             <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
                 {systemSettings.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
              </div>
              <div className="flex flex-col min-w-0">
                 <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings.shortName}</span>
-                <span className="text-[9px] font-bold text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser.fullName || 'User'}</span>
+                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser.fullName || 'User'}</span>
              </div>
           </div>
-          <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-white"><X size={20} /></button>
+          <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white"><X size={20} /></button>
         </div>
-
+ 
         <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
-          <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'dashboard' ? primaryBgStyle : {}}><LayoutDashboard size={20} /> <span className="font-bold text-sm">Tổng quan</span></button>
-          <button onClick={() => handleTabChange('reports')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'reports' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'reports' ? primaryBgStyle : {}}><FileText size={20} /> <span className="font-bold text-sm">Báo cáo</span></button>
-          <button onClick={() => handleTabChange('meetings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'meetings' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'meetings' ? primaryBgStyle : {}}><CalendarDays size={20} /> <span className="font-bold text-sm">Lịch họp</span></button>
+          <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'dashboard' ? primaryBgStyle : {}}><LayoutDashboard size={20} /> <span className="font-bold text-sm">Tổng quan</span></button>
+          <button onClick={() => handleTabChange('reports')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'reports' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'reports' ? primaryBgStyle : {}}><FileText size={20} /> <span className="font-bold text-sm">Báo cáo</span></button>
+          <button onClick={() => handleTabChange('meetings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'meetings' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'meetings' ? primaryBgStyle : {}}><CalendarDays size={20} /> <span className="font-bold text-sm">Lịch họp</span></button>
           {isAdmin && (
-            <button onClick={() => handleTabChange('monitoring')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'monitoring' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'monitoring' ? primaryBgStyle : {}}><MonitorPlay size={20} /> <span className="font-bold text-sm">Giám sát</span></button>
+            <button onClick={() => handleTabChange('monitoring')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'monitoring' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'monitoring' ? primaryBgStyle : {}}><MonitorPlay size={20} /> <span className="font-bold text-sm">Giám sát</span></button>
           )}
           {isAdmin && (
-            <div className="pt-4 border-t border-slate-800 space-y-1">
-               <p className="px-4 text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Hệ thống</p>
-               <button onClick={() => handleTabChange('management')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'management' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'management' ? primaryBgStyle : {}}><Settings size={20} /> <span className="font-bold text-sm">Danh mục</span></button>
-               <button onClick={() => handleTabChange('accounts')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'accounts' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'accounts' ? primaryBgStyle : {}}><Users size={20} /> <span className="font-bold text-sm">Tài khoản</span></button>
-               <button onClick={() => handleTabChange('deployment')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'deployment' ? 'bg-[var(--primary-color)] text-white shadow-lg' : 'text-slate-400 hover:bg-slate-800'}`} style={activeTab === 'deployment' ? primaryBgStyle : {}}><Share2 size={20} /> <span className="font-bold text-sm">Triển khai</span></button>
+            <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-1">
+               <p className="px-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Hệ thống</p>
+               <button onClick={() => handleTabChange('management')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'management' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'management' ? primaryBgStyle : {}}><Settings size={20} /> <span className="font-bold text-sm">Danh mục</span></button>
+               <button onClick={() => handleTabChange('accounts')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'accounts' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'accounts' ? primaryBgStyle : {}}><Users size={20} /> <span className="font-bold text-sm">Tài khoản</span></button>
+               <button onClick={() => handleTabChange('deployment')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'deployment' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'deployment' ? primaryBgStyle : {}}><Share2 size={20} /> <span className="font-bold text-sm">Triển khai</span></button>
             </div>
           )}
         </nav>
-
-        <div className="p-6 border-t border-slate-800">
-           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all font-bold text-sm"><LogOut size={18} /> Đăng xuất</button>
+ 
+        <div className="p-6 border-t border-gray-100 dark:border-slate-800">
+           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 dark:text-red-400 hover:bg-red-500/10 transition-all font-bold text-sm"><LogOut size={18} /> Đăng xuất</button>
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:px-8 justify-between shrink-0 shadow-sm">
-          <button onClick={toggleSidebar} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"><Menu size={24} /></button>
+      <main className="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 md:px-8 justify-between shrink-0 shadow-sm transition-colors duration-300">
+          <button onClick={toggleSidebar} className="lg:hidden p-2 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><Menu size={24} /></button>
           
           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-200 rounded-full">
+             <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full">
                 <div className={`w-2 h-2 rounded-full ${isSyncing ? 'bg-amber-500 animate-spin' : 'bg-emerald-500 animate-pulse'}`}></div>
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
                   {isSyncing ? 'Đang đồng bộ...' : `Cloud Sync: ${lastRefreshed.toLocaleTimeString('vi-VN', { hour12: false })}`}
                 </span>
              </div>
           </div>
-
+ 
           <div className="flex items-center gap-2 md:gap-4">
             <button 
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 group relative"
+              title={isDarkMode ? "Chế độ sáng" : "Chế độ tối"}
+            >
+              {isDarkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600" />}
+            </button>
+ 
+            <button 
               onClick={() => setIsChangePasswordOpen(true)}
-              className="p-2.5 text-slate-500 hover:bg-slate-100 rounded-full transition-all border border-transparent hover:border-slate-200 group relative"
+              className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 group relative"
               title="Đổi mật khẩu"
             >
-              <ShieldEllipsis size={20} className="group-hover:text-indigo-600 transition-colors" />
+              <ShieldEllipsis size={20} className="group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
             </button>
             
-            <div className="flex items-center gap-3 bg-blue-50/50 px-4 py-1.5 rounded-full border border-blue-100/50">
+            <div className="flex items-center gap-3 bg-blue-50/50 dark:bg-blue-900/20 px-4 py-1.5 rounded-full border border-blue-100/50 dark:border-blue-800/30">
               <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white font-black shadow-lg shadow-blue-200">
                 {(currentUser?.fullName || 'U').trim().split(/\s+/).pop()?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <p className="text-xs font-black text-gray-700 hidden sm:block">
+              <p className="text-xs font-black text-slate-700 dark:text-slate-300 hidden sm:block">
                 Tài khoản: <span style={primaryTextStyle}>{currentUser?.fullName || 'N/A'}</span>
               </p>
             </div>
@@ -458,7 +494,7 @@ const App: React.FC = () => {
 
                {/* Efficiency KPIs Section */}
                <div className="space-y-4">
-                  <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] border-l-4 border-blue-600 pl-4 mb-4">Chỉ số Hiệu quả Vận hành (KPIs)</h3>
+                  <h3 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] border-l-4 border-blue-600 pl-4 mb-4">Chỉ số Hiệu quả Vận hành (KPIs)</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <StatCard 
                       title="Thời lượng TB (Giờ)" 
@@ -491,8 +527,8 @@ const App: React.FC = () => {
                </div>
 
                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                  <div className="xl:col-span-2 bg-white p-6 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                     <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest mb-8">Tần suất họp (7 ngày qua)</h3>
+                  <div className="xl:col-span-2 bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-700 shadow-sm">
+                     <h3 className="text-xs font-black uppercase text-gray-400 dark:text-slate-500 tracking-widest mb-8">Tần suất họp (7 ngày qua)</h3>
                      <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                            <AreaChart data={dashboardStats.last7Days}>
@@ -511,8 +547,8 @@ const App: React.FC = () => {
                      </div>
                   </div>
                   
-                  <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col">
-                     <h3 className="text-xs font-black uppercase text-gray-400 tracking-widest mb-8">Top Đơn vị chủ trì</h3>
+                  <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-700 shadow-sm flex flex-col">
+                     <h3 className="text-xs font-black uppercase text-gray-400 dark:text-slate-500 tracking-widest mb-8">Top Đơn vị chủ trì</h3>
                      <div className="flex-1">
                         <ResponsiveContainer width="100%" height="100%">
                            <BarChart layout="vertical" data={dashboardStats.unitStats} margin={{ left: 20 }}>
@@ -527,24 +563,24 @@ const App: React.FC = () => {
                            </BarChart>
                         </ResponsiveContainer>
                      </div>
-                     <div className="mt-4 pt-4 border-t border-gray-50">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Đơn vị tích cực nhất:</p>
-                        <p className="text-sm font-black text-slate-900 mt-1 truncate flex items-center gap-2">
+                     <div className="mt-4 pt-4 border-t border-gray-50 dark:border-slate-700">
+                        <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Đơn vị tích cực nhất:</p>
+                        <div className="text-sm font-black text-slate-900 dark:text-white mt-1 truncate flex items-center gap-2">
                            <Building2 size={14} className="text-blue-500" />
                            {dashboardStats.topUnit}
-                        </p>
+                        </div>
                      </div>
                   </div>
                </div>
 
-               <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="p-6 md:p-8 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
-                     <h3 className="text-xs font-black uppercase tracking-widest text-gray-400">Cuộc họp gần đây</h3>
+               <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                  <div className="p-6 md:p-8 border-b border-gray-50 dark:border-slate-700 flex justify-between items-center bg-gray-50/30 dark:bg-slate-900/30">
+                     <h3 className="text-xs font-black uppercase tracking-widest text-gray-400 dark:text-slate-500">Cuộc họp gần đây</h3>
                      <button onClick={() => setActiveTab('meetings')} style={primaryTextStyle} className="text-xs font-bold hover:underline">Xem tất cả</button>
                   </div>
                   <div className="overflow-x-auto">
                      <table className="w-full text-left text-sm min-w-[800px]">
-                        <thead className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        <thead className="bg-gray-50/50 dark:bg-slate-900/50 text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">
                            <tr>
                               <th className="px-8 py-4">Tên cuộc họp</th>
                               <th className="px-8 py-4">Đơn vị chủ trì</th>
@@ -552,17 +588,17 @@ const App: React.FC = () => {
                               <th className="px-8 py-4 text-center">Trạng thái</th>
                            </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-gray-50 dark:divide-slate-700">
                            {dashboardStats.recentMeetings.map(m => (
-                             <tr key={m.id} className="hover:bg-gray-50 transition-all cursor-pointer" onClick={() => setSelectedMeeting(m)}>
+                             <tr key={m.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-all cursor-pointer" onClick={() => setSelectedMeeting(m)}>
                                 <td className="px-8 py-5">
-                                   <div className={`font-bold text-sm line-clamp-1 ${m.status === 'CANCELLED' ? 'text-red-600 line-through' : m.status === 'POSTPONED' ? 'text-amber-600 italic' : 'text-gray-900'}`}>
+                                   <div className={`font-bold text-sm line-clamp-1 ${m.status === 'CANCELLED' ? 'text-red-600 line-through' : m.status === 'POSTPONED' ? 'text-amber-600 italic' : 'text-gray-900 dark:text-white'}`}>
                                      {m.title}
                                    </div>
-                                   <div className="text-[10px] text-gray-400 mt-1 font-mono uppercase tracking-tighter">ID: {m.id}</div>
+                                   <div className="text-[10px] text-gray-400 dark:text-slate-500 mt-1 font-mono uppercase tracking-tighter">ID: {m.id}</div>
                                 </td>
                                 <td className="px-8 py-5">
-                                   <div className="font-bold text-[11px] text-slate-700">{m.hostUnit}</div>
+                                   <div className="font-bold text-[11px] text-slate-700 dark:text-slate-300">{m.hostUnit}</div>
                                 </td>
                                 <td className="px-8 py-5">
                                    <div className="text-[11px] font-bold text-blue-600">{new Date(m.startTime).toLocaleTimeString('vi-VN', { hour12: false })}</div>

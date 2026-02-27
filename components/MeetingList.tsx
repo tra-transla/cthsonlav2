@@ -144,16 +144,16 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full w-full">
-      <div className="p-4 md:p-5 border-b border-gray-100 flex flex-col gap-4 bg-gray-50/30">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col h-full w-full">
+      <div className="p-4 md:p-5 border-b border-gray-100 dark:border-slate-700 flex flex-col gap-4 bg-gray-50/30 dark:bg-slate-900/30">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-100 shrink-0">
+            <div className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-100 dark:shadow-blue-900/20 shrink-0">
               <FileText size={20} />
             </div>
             <div>
-              <h2 className="text-base md:text-lg font-bold text-gray-900">Danh sách cuộc họp</h2>
-              <p className="text-xs text-gray-500 font-medium">Tìm thấy {filteredAndSortedMeetings.length} cuộc họp</p>
+              <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Danh sách cuộc họp</h2>
+              <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Tìm thấy {filteredAndSortedMeetings.length} cuộc họp</p>
             </div>
           </div>
           
@@ -162,7 +162,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
               <input
                 type="text"
                 placeholder="Tìm cuộc họp..."
-                className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 w-full md:w-64 text-sm transition-all"
+                className="pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 w-full md:w-64 text-sm dark:text-white transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -196,19 +196,19 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
         <div className="flex flex-col md:flex-row md:items-end gap-3 pb-1">
           <div className="flex gap-2">
              <div className="space-y-1.5 flex-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Từ ngày</label>
+                <label className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Từ ngày</label>
                 <input 
                   type="date"
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-700 transition-all"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-700 dark:text-white transition-all"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </div>
               <div className="space-y-1.5 flex-1">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Đến ngày</label>
+                <label className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Đến ngày</label>
                 <input 
                   type="date"
-                  className="w-full px-3 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-700 transition-all"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold text-gray-700 dark:text-white transition-all"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                 />
@@ -231,9 +231,9 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
       <div className="overflow-x-auto flex-1 w-full relative">
         <table className="w-full text-left border-collapse min-w-[800px]">
           <thead>
-            <tr className="bg-gray-50/80 text-gray-500 text-[11px] uppercase font-black tracking-widest">
+            <tr className="bg-slate-50/80 dark:bg-slate-900/80 text-slate-500 dark:text-slate-400 text-[11px] uppercase font-black tracking-widest border-b border-slate-100 dark:border-slate-800">
               <th 
-                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-gray-100 group transition-colors sticky left-0 bg-gray-50/80 z-10"
+                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 group transition-colors sticky left-0 bg-slate-50/80 dark:bg-slate-900/80 z-10"
                 onClick={() => handleSort('title')}
               >
                 <div className="flex items-center">
@@ -242,7 +242,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                 </div>
               </th>
               <th 
-                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-gray-100 group transition-colors"
+                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 group transition-colors"
                 onClick={() => handleSort('hostUnit')}
               >
                 <div className="flex items-center">
@@ -251,7 +251,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                 </div>
               </th>
               <th 
-                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-gray-100 group transition-colors"
+                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 group transition-colors"
                 onClick={() => handleSort('chairPerson')}
               >
                 <div className="flex items-center">
@@ -260,7 +260,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                 </div>
               </th>
               <th 
-                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-gray-100 group transition-colors"
+                className="px-4 md:px-6 py-4 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 group transition-colors"
                 onClick={() => handleSort('startTime')}
               >
                 <div className="flex items-center">
@@ -272,7 +272,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
               <th className="px-4 md:px-6 py-4 text-center">Hành động</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
             {paginatedMeetings.map((meeting) => {
               const isCancelled = meeting.status === 'CANCELLED';
               const isPostponed = meeting.status === 'POSTPONED';
@@ -282,16 +282,16 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                 <tr 
                   key={meeting.id} 
                   onClick={() => onSelect(meeting)}
-                  className={`hover:bg-blue-50/30 transition-all group cursor-pointer ${
-                  isCancelled ? 'bg-red-50/60 border-l-4 border-l-red-600' : 
-                  isPostponed ? 'bg-amber-50/60 border-l-4 border-l-amber-500' : ''
+                  className={`hover:bg-blue-50/40 dark:hover:bg-blue-900/20 transition-all group cursor-pointer border-b border-slate-50 dark:border-slate-800/50 ${
+                  isCancelled ? 'bg-red-50/40 dark:bg-red-900/20 border-l-4 border-l-red-600' : 
+                  isPostponed ? 'bg-amber-50/40 dark:bg-amber-900/20 border-l-4 border-l-amber-500' : ''
                 }`}>
-                  <td className="px-4 md:px-6 py-4 sticky left-0 bg-inherit z-10 border-r border-transparent group-hover:border-gray-100">
+                  <td className="px-4 md:px-6 py-4 sticky left-0 bg-inherit z-10 border-r border-transparent group-hover:border-slate-100 dark:group-hover:border-slate-800">
                     <div className="relative group/title-tip flex items-start gap-2">
                       <div className={`font-bold transition-all leading-tight text-sm line-clamp-2 md:line-clamp-none min-w-[150px] ${
-                        isCancelled ? 'text-red-700 line-through decoration-red-700 decoration-2' : 
-                        isPostponed ? 'text-amber-700 italic' : 
-                        'text-gray-900 group-hover:text-blue-700'
+                        isCancelled ? 'text-red-700 dark:text-red-400 line-through decoration-red-700/50 decoration-2' : 
+                        isPostponed ? 'text-amber-700 dark:text-amber-400 italic' : 
+                        'text-slate-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400'
                       }`}>
                         {meeting.title}
                       </div>
@@ -317,33 +317,33 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                     <div className={`text-[10px] mt-1 font-mono tracking-tighter truncate ${isCancelled ? 'text-red-400' : isPostponed ? 'text-amber-400' : 'text-gray-400'}`}>REF: {meeting.id}</div>
                   </td>
                   <td className="px-4 md:px-6 py-4">
-                    <div className={`text-sm font-medium line-clamp-1 ${isCancelled ? 'text-red-800' : isPostponed ? 'text-amber-800' : 'text-gray-700'}`}>{meeting.hostUnit}</div>
+                    <div className={`text-sm font-medium line-clamp-1 ${isCancelled ? 'text-red-800 dark:text-red-300' : isPostponed ? 'text-amber-800 dark:text-amber-300' : 'text-gray-700 dark:text-slate-300'}`}>{meeting.hostUnit}</div>
                   </td>
                   <td className="px-4 md:px-6 py-4">
                     <div className="flex items-center gap-2">
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold border shrink-0 ${
                         isCancelled ? 'bg-red-200 text-red-700 border-red-300' : 
                         isPostponed ? 'bg-amber-200 text-amber-700 border-amber-300' : 
-                        'bg-blue-50 text-blue-600 border-blue-100'
+                        'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800'
                       }`}>
                         {meeting.chairPerson?.charAt(0) || '?'}
                       </div>
-                      <span className={`text-sm font-semibold line-clamp-1 ${isCancelled ? 'text-red-800' : isPostponed ? 'text-amber-800' : 'text-gray-700'}`}>{meeting.chairPerson}</span>
+                      <span className={`text-sm font-semibold line-clamp-1 ${isCancelled ? 'text-red-800 dark:text-red-300' : isPostponed ? 'text-amber-800 dark:text-amber-300' : 'text-gray-700 dark:text-slate-300'}`}>{meeting.chairPerson}</span>
                     </div>
                   </td>
                   <td className="px-4 md:px-6 py-4">
-                    <div className={`text-xs font-bold whitespace-nowrap ${isCancelled ? 'text-red-600' : isPostponed ? 'text-amber-600' : 'text-gray-800'}`}>{new Date(meeting.startTime).toLocaleDateString('vi-VN')}</div>
-                    <div className={`text-[11px] font-medium mt-0.5 whitespace-nowrap ${isCancelled ? 'text-red-500/70' : isPostponed ? 'text-amber-500/70' : 'text-gray-500'}`}>
+                    <div className={`text-xs font-bold whitespace-nowrap ${isCancelled ? 'text-red-600 dark:text-red-400' : isPostponed ? 'text-amber-600 dark:text-amber-400' : 'text-gray-800 dark:text-slate-200'}`}>{new Date(meeting.startTime).toLocaleDateString('vi-VN')}</div>
+                    <div className={`text-[11px] font-medium mt-0.5 whitespace-nowrap ${isCancelled ? 'text-red-500/70' : isPostponed ? 'text-amber-500/70' : 'text-gray-500 dark:text-slate-400'}`}>
                       {new Date(meeting.startTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })} - {new Date(meeting.endTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </div>
                   </td>
                   <td className="px-4 md:px-6 py-4 text-center">
                     {isCancelled ? (
-                      <span className="px-2.5 py-1 bg-red-700 text-white text-[10px] font-black uppercase rounded-lg shadow-md whitespace-nowrap ring-2 ring-red-200">ĐÃ HUỶ</span>
+                      <span className="px-2.5 py-1 bg-red-700 text-white text-[10px] font-black uppercase rounded-lg shadow-md whitespace-nowrap ring-2 ring-red-200 dark:ring-red-900/50">ĐÃ HUỶ</span>
                     ) : isPostponed ? (
-                      <span className="px-2.5 py-1 bg-amber-600 text-white text-[10px] font-black uppercase rounded-lg shadow-md whitespace-nowrap ring-2 ring-amber-100">TẠM HOÃN</span>
+                      <span className="px-2.5 py-1 bg-amber-600 text-white text-[10px] font-black uppercase rounded-lg shadow-md whitespace-nowrap ring-2 ring-amber-100 dark:ring-amber-900/50">TẠM HOÃN</span>
                     ) : (
-                      <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-[10px] font-black uppercase rounded-lg border border-blue-100 shadow-sm whitespace-nowrap">
+                      <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-black uppercase rounded-lg border border-blue-100 dark:border-blue-800 shadow-sm whitespace-nowrap">
                         {meeting.endpoints?.length || 0} ĐIỂM CẦU
                       </span>
                     )}
@@ -356,7 +356,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                         className={`inline-flex items-center justify-center p-2 rounded-xl transition-all border shadow-sm ${
                           meeting.invitationLink 
                             ? 'bg-indigo-600 text-white border-indigo-700 hover:bg-indigo-700 hover:shadow-indigo-200 active:scale-95' 
-                            : 'bg-gray-50 text-gray-300 border-gray-100 cursor-not-allowed opacity-40'
+                            : 'bg-gray-50 dark:bg-slate-700 text-gray-300 dark:text-slate-500 border-gray-100 dark:border-slate-600 cursor-not-allowed opacity-40'
                         }`}
                         disabled={!meeting.invitationLink}
                         title={meeting.invitationLink ? "Xem Giấy mời (URL)" : "Chưa gán giấy mời"}
@@ -365,10 +365,10 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                       </button>
 
                       {isAdmin && (
-                        <div className="flex items-center gap-1.5 border-l border-gray-100 pl-1.5">
+                        <div className="flex items-center gap-1.5 border-l border-gray-100 dark:border-slate-700 pl-1.5">
                           <button 
                             onClick={(e) => { e.stopPropagation(); onEdit?.(meeting); }}
-                            className="p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                            className="p-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 dark:border-emerald-800 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
                             title="Chỉnh sửa"
                             disabled={isSpecial}
                           >
@@ -377,7 +377,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                           
                           <button 
                             onClick={(e) => { e.stopPropagation(); setActionMeeting({ meeting, type: 'POSTPONE' }); }}
-                            className="p-2 bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white rounded-xl transition-all border border-amber-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                            className="p-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-600 hover:text-white rounded-xl transition-all border border-amber-100 dark:border-amber-800 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
                             title="Hoãn lịch họp"
                             disabled={isSpecial}
                           >
@@ -386,7 +386,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
 
                           <button 
                             onClick={(e) => { e.stopPropagation(); setActionMeeting({ meeting, type: 'CANCEL' }); }}
-                            className="p-2 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+                            className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 dark:border-red-800 disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
                             title="Huỷ lịch họp"
                             disabled={isSpecial}
                           >
@@ -396,7 +396,7 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
                           {onDelete && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); onDelete(meeting.id); }}
-                              className="p-2 bg-slate-100 text-slate-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-slate-200"
+                              className="p-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-slate-200 dark:border-slate-600"
                               title="Xóa vĩnh viễn"
                             >
                               <Trash2 size={14} />
@@ -415,31 +415,31 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
 
       {actionMeeting && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 animate-in zoom-in-95 duration-200 overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl shadow-2xl p-8 animate-in zoom-in-95 duration-200 overflow-hidden">
              <div className="flex items-center gap-4 mb-6">
                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${
-                  actionMeeting.type === 'CANCEL' ? 'bg-red-100 text-red-600 shadow-red-100' : 'bg-amber-100 text-amber-600 shadow-amber-100'
+                  actionMeeting.type === 'CANCEL' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 shadow-red-100 dark:shadow-red-900/20' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shadow-amber-100 dark:shadow-amber-900/20'
                 }`}>
                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                 </div>
                 <div>
-                   <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Xác nhận {actionMeeting.type === 'CANCEL' ? 'huỷ lịch' : 'hoãn lịch'}</h3>
-                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Thao tác này sẽ đánh dấu cuộc họp đã bị {actionMeeting.type === 'CANCEL' ? 'huỷ bỏ' : 'tạm hoãn'}</p>
+                   <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Xác nhận {actionMeeting.type === 'CANCEL' ? 'huỷ lịch' : 'hoãn lịch'}</h3>
+                   <p className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">Thao tác này sẽ đánh dấu cuộc họp đã bị {actionMeeting.type === 'CANCEL' ? 'huỷ bỏ' : 'tạm hoãn'}</p>
                 </div>
              </div>
              
              <div className="space-y-4">
-                <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl">
-                   <p className="text-xs font-bold text-gray-500 uppercase tracking-tight mb-1">Cuộc họp:</p>
-                   <p className="text-sm font-black text-gray-800 line-clamp-2">{actionMeeting.meeting.title}</p>
+                <div className="p-4 bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-700 rounded-2xl">
+                   <p className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-tight mb-1">Cuộc họp:</p>
+                   <p className="text-sm font-black text-gray-800 dark:text-white line-clamp-2">{actionMeeting.meeting.title}</p>
                 </div>
                 
                 <div className="space-y-2">
-                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Lý do {actionMeeting.type === 'CANCEL' ? 'huỷ' : 'hoãn'} cuộc họp *</label>
+                   <label className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Lý do {actionMeeting.type === 'CANCEL' ? 'huỷ' : 'hoãn'} cuộc họp *</label>
                    <textarea 
-                     className={`w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-4 focus:bg-white outline-none transition-all text-sm font-bold min-h-[100px] resize-none ${
+                     className={`w-full px-5 py-4 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-4 focus:bg-white dark:focus:bg-slate-800 outline-none transition-all text-sm font-bold min-h-[100px] resize-none ${
                        actionMeeting.type === 'CANCEL' ? 'focus:ring-red-500/10 focus:border-red-500' : 'focus:ring-amber-500/10 focus:border-amber-500'
-                     }`}
+                     } dark:text-white`}
                      placeholder={`Nhập lý do ${actionMeeting.type === 'CANCEL' ? 'huỷ' : 'hoãn'}...`}
                      value={reason}
                      onChange={e => setReason(e.target.value)}
@@ -450,14 +450,14 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
              <div className="flex gap-4 mt-8">
                 <button 
                   onClick={() => { setActionMeeting(null); setReason(''); }}
-                  className="flex-1 px-6 py-3 border border-gray-200 text-gray-600 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-gray-50 transition-all"
+                  className="flex-1 px-6 py-3 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-gray-50 dark:hover:bg-slate-700 transition-all"
                 >
                   Bỏ qua
                 </button>
                 <button 
                   onClick={confirmAction}
                   className={`flex-1 px-6 py-3 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl transition-all active:scale-[0.98] ${
-                    actionMeeting.type === 'CANCEL' ? 'bg-red-600 hover:bg-red-700 shadow-red-100' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-100'
+                    actionMeeting.type === 'CANCEL' ? 'bg-red-600 hover:bg-red-700 shadow-red-100 dark:shadow-red-900/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-100 dark:shadow-amber-900/20'
                   }`}
                 >
                   Xác nhận {actionMeeting.type === 'CANCEL' ? 'huỷ' : 'hoãn'}
@@ -468,9 +468,9 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
       )}
 
       {totalPages > 1 && (
-        <div className="px-4 md:px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-widest hidden md:block">
-            Hiển thị <span className="text-blue-600 font-black">{startIndex + 1}-{endIndex}</span> trong <span className="text-gray-900 font-black">{filteredAndSortedMeetings.length}</span> cuộc họp
+        <div className="px-4 md:px-6 py-4 bg-gray-50/50 dark:bg-slate-900/50 border-t border-gray-100 dark:border-slate-700 flex items-center justify-between">
+          <div className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest hidden md:block">
+            Hiển thị <span className="text-blue-600 dark:text-blue-400 font-black">{startIndex + 1}-{endIndex}</span> trong <span className="text-gray-900 dark:text-white font-black">{filteredAndSortedMeetings.length}</span> cuộc họp
           </div>
           <div className="flex items-center gap-2 mx-auto md:mx-0">
             <button 
@@ -478,19 +478,19 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
               disabled={currentPage === 1}
               className={`p-2.5 rounded-xl border transition-all ${
                 currentPage === 1 
-                  ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed' 
-                  : 'bg-white text-blue-600 border-gray-200 hover:border-blue-500 hover:bg-blue-50 active:scale-95'
+                  ? 'bg-gray-100 dark:bg-slate-800 text-gray-300 dark:text-slate-600 border-gray-200 dark:border-slate-700 cursor-not-allowed' 
+                  : 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border-gray-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:scale-95'
               }`}
               title="Trang trước"
             >
               <ChevronLeft size={20} strokeWidth={2.5} />
             </button>
             
-            <div className="flex items-center px-4 py-2 bg-white border border-gray-200 rounded-xl">
-               <span className="text-xs font-black text-gray-400 uppercase tracking-widest mr-2">Trang</span>
-               <span className="text-sm font-black text-blue-600">{currentPage}</span>
-               <span className="text-xs font-black text-gray-300 mx-1.5">/</span>
-               <span className="text-sm font-black text-gray-900">{totalPages}</span>
+            <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl">
+               <span className="text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mr-2">Trang</span>
+               <span className="text-sm font-black text-blue-600 dark:text-blue-400">{currentPage}</span>
+               <span className="text-xs font-black text-gray-300 dark:text-slate-600 mx-1.5">/</span>
+               <span className="text-sm font-black text-gray-900 dark:text-white">{totalPages}</span>
             </div>
 
             <button 
@@ -498,8 +498,8 @@ const MeetingList: React.FC<MeetingListProps> = ({ meetings, onSelect, isAdmin, 
               disabled={currentPage === totalPages}
               className={`p-2.5 rounded-xl border transition-all ${
                 currentPage === totalPages 
-                  ? 'bg-gray-100 text-gray-300 border-gray-200 cursor-not-allowed' 
-                  : 'bg-white text-blue-600 border-gray-200 hover:border-blue-500 hover:bg-blue-50 active:scale-95'
+                  ? 'bg-gray-100 dark:bg-slate-800 text-gray-300 dark:text-slate-600 border-gray-200 dark:border-slate-700 cursor-not-allowed' 
+                  : 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 border-gray-200 dark:border-slate-700 hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:scale-95'
               }`}
               title="Trang sau"
             >

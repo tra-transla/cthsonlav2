@@ -89,7 +89,7 @@ const ExportPage: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20">
       {/* Main Hero Section */}
-      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-10 rounded-[2.5rem] text-white shadow-2xl dark:shadow-none relative overflow-hidden">
         <div className="absolute top-0 right-0 p-12 opacity-5">
           <svg className="w-80 h-80" fill="currentColor" viewBox="0 0 24 24">
             <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4zM4 6a2 2 0 00-2 2v8a2 2 0 002 2h10a2 2 0 002-2V8a2 2 0 00-2-2H4z" />
@@ -160,11 +160,11 @@ const ExportPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cloud Management section */}
         <div className="lg:col-span-2 space-y-8">
-           <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm relative overflow-hidden group">
+           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:rotate-12 transition-transform duration-700">
                 <svg className="w-32 h-32" fill="currentColor" viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
               </div>
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
+              <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-8 flex items-center gap-3">
                 <div className="w-1.5 h-5 bg-blue-600 rounded-full"></div>
                 Lộ trình Triển khai Cloud (Remote Hosting)
               </h4>
@@ -175,11 +175,11 @@ const ExportPage: React.FC = () => {
                    { step: '03', title: 'Deploy lên Vercel', desc: 'Giải nén và đẩy code lên GitHub, sau đó kết nối Vercel để nhận domain public.' },
                    { step: '04', title: 'Cấu hình Domain', desc: 'Trỏ domain riêng hoặc sử dụng subdomain mặc định để cán bộ truy cập từ xa.' }
                  ].map(item => (
-                   <div key={item.step} className="flex gap-6 p-4 rounded-3xl hover:bg-slate-50 transition-colors border border-transparent hover:border-gray-100">
-                      <div className="text-2xl font-black text-blue-100 group-hover:text-blue-200 transition-colors">{item.step}</div>
+                   <div key={item.step} className="flex gap-6 p-4 rounded-3xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-slate-700">
+                      <div className="text-2xl font-black text-blue-100 dark:text-blue-900 group-hover:text-blue-200 dark:group-hover:text-blue-800 transition-colors">{item.step}</div>
                       <div>
-                         <h5 className="text-sm font-black text-slate-900 uppercase tracking-tight">{item.title}</h5>
-                         <p className="text-xs text-slate-500 mt-2 leading-relaxed">{item.desc}</p>
+                         <h5 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{item.title}</h5>
+                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">{item.desc}</p>
                       </div>
                    </div>
                  ))}
@@ -216,24 +216,24 @@ const ExportPage: React.FC = () => {
 
         {/* File Explorer Column */}
         <div className="space-y-6">
-           <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Cấu trúc đóng gói</h4>
+           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2.5rem] border border-gray-100 dark:border-slate-800 shadow-sm">
+              <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mb-6">Cấu trúc đóng gói</h4>
               <div className="space-y-2">
                  {['Core', 'Services', 'Database', 'Deployment'].map(cat => (
                    <div key={cat} className="mb-4">
-                      <p className="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-2 ml-1">{cat}</p>
+                      <p className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-2 ml-1">{cat}</p>
                       <div className="space-y-1.5">
                         {files.filter(f => f.category === cat).map(file => (
-                          <div key={file.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl border border-transparent hover:border-blue-100 hover:bg-blue-50 transition-all group">
+                          <div key={file.name} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-transparent hover:border-blue-100 dark:hover:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all group">
                              <div className="flex items-center gap-3 overflow-hidden">
-                               <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-400 group-hover:text-blue-600 shadow-sm transition-colors">
+                               <div className="w-8 h-8 bg-white dark:bg-slate-700 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400 shadow-sm transition-colors">
                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                                </div>
-                               <span className="text-[11px] font-bold text-slate-700 truncate">{file.name}</span>
+                               <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 truncate">{file.name}</span>
                              </div>
                              <button 
                                onClick={() => handleCopyCode(file.name)}
-                               className="p-2 text-slate-300 hover:text-blue-600 transition-colors"
+                               className="p-2 text-slate-300 dark:text-slate-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                              >
                                {copiedFile === file.name ? (
                                  <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -249,14 +249,14 @@ const ExportPage: React.FC = () => {
               </div>
            </div>
            
-           <div className="bg-amber-50 p-6 rounded-[2rem] border border-amber-100 border-dashed">
+           <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-[2rem] border border-amber-100 dark:border-amber-800/30 border-dashed">
               <div className="flex gap-4">
-                 <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                 <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                  </div>
                  <div>
-                    <h5 className="text-[10px] font-black text-amber-800 uppercase tracking-widest">Lưu ý bản quyền</h5>
-                    <p className="text-[10px] text-amber-700/70 mt-1 font-medium leading-relaxed italic">
+                    <h5 className="text-[10px] font-black text-amber-800 dark:text-amber-400 uppercase tracking-widest">Lưu ý bản quyền</h5>
+                    <p className="text-[10px] text-amber-700/70 dark:text-amber-500/70 mt-1 font-medium leading-relaxed italic">
                        Mã nguồn được đóng gói bao gồm các logic nghiệp vụ quan trọng. Hãy bảo mật file ZIP và không chia sẻ lên các không gian lưu trữ công cộng mà không có mật khẩu.
                     </p>
                  </div>

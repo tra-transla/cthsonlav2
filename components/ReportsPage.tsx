@@ -122,33 +122,33 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
   return (
     <div className="space-y-6 pb-20 animate-in fade-in duration-500">
       {/* Control Panel */}
-      <div className="bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm no-print space-y-6">
+      <div className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-sm no-print space-y-6">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
           <div className="space-y-4">
-            <h2 className="text-xl font-black text-gray-900 uppercase flex items-center gap-3">
-              <FileText className="text-blue-600" />
+            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase flex items-center gap-3">
+              <FileText className="text-blue-600 dark:text-blue-400" />
               Thiết lập Báo cáo
             </h2>
             <div className="flex flex-wrap gap-2">
-              <button onClick={() => setQuickRange('7d')} className="px-4 py-2 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all">7 Ngày</button>
-              <button onClick={() => setQuickRange('30d')} className="px-4 py-2 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all">30 Ngày</button>
-              <button onClick={() => setQuickRange('thisMonth')} className="px-4 py-2 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all">Tháng này</button>
-              <button onClick={() => setQuickRange('thisYear')} className="px-4 py-2 bg-gray-100 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all">Năm nay</button>
+              <button onClick={() => setQuickRange('7d')} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all text-slate-600 dark:text-slate-400">7 Ngày</button>
+              <button onClick={() => setQuickRange('30d')} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all text-slate-600 dark:text-slate-400">30 Ngày</button>
+              <button onClick={() => setQuickRange('thisMonth')} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all text-slate-600 dark:text-slate-400">Tháng này</button>
+              <button onClick={() => setQuickRange('thisYear')} className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-blue-600 hover:text-white rounded-xl text-[10px] font-black transition-all text-slate-600 dark:text-slate-400">Năm nay</button>
             </div>
           </div>
           
           <div className="flex flex-wrap items-end gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Từ ngày</label>
-              <input type="date" className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold" value={startDate} onChange={e => setStartDate(e.target.value)} />
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Từ ngày</label>
+              <input type="date" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold dark:bg-slate-950 dark:text-white" value={startDate} onChange={e => setStartDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Đến ngày</label>
-              <input type="date" className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">Đến ngày</label>
+              <input type="date" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold dark:bg-slate-950 dark:text-white" value={endDate} onChange={e => setEndDate(e.target.value)} />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Gom nhóm biểu đồ</label>
-              <select className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold cursor-pointer" value={groupBy} onChange={e => setGroupBy(e.target.value as any)}>
+              <label className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest ml-1">Gom nhóm biểu đồ</label>
+              <select className="w-full px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-sm font-semibold cursor-pointer dark:bg-slate-900 dark:text-white" value={groupBy} onChange={e => setGroupBy(e.target.value as any)}>
                 <option value="day">Theo Ngày</option>
                 <option value="week">Theo Tuần</option>
                 <option value="month">Theo Tháng</option>
@@ -158,7 +158,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
             </div>
             <button 
               onClick={downloadPDF} 
-              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 transition-all flex items-center gap-2"
+              className="px-6 py-2.5 bg-slate-900 dark:bg-slate-700 text-white rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-all flex items-center gap-2"
             >
               <Download size={16} />
               Tải PDF
@@ -168,14 +168,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
       </div>
 
       {/* Report Document Content */}
-      <div ref={reportRef} className="bg-white rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 min-h-[1000px]">
+      <div ref={reportRef} className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-sm p-10 space-y-10 border border-gray-50 dark:border-slate-700 min-h-[1000px]">
         {/* Header */}
-        <div className="border-b-2 border-slate-900 pb-8 flex justify-between items-end">
+        <div className="border-b-2 border-slate-900 dark:border-slate-600 pb-8 flex justify-between items-end">
           <div className="space-y-1">
-            <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Báo cáo Thống kê Hội nghị</h1>
-            <p className="text-sm font-bold text-blue-600 uppercase tracking-[0.1em]">Hệ thống Quản lý & Giám sát Cầu truyền hình tỉnh Sơn La</p>
+            <h1 className="text-3xl font-black uppercase tracking-tighter text-slate-900 dark:text-white">Báo cáo Thống kê Hội nghị</h1>
+            <p className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.1em]">Hệ thống Quản lý & Giám sát Cầu truyền hình tỉnh Sơn La</p>
           </div>
-          <div className="text-right text-[10px] font-bold text-slate-400 uppercase space-y-1">
+          <div className="text-right text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase space-y-1">
             <p>Thời gian báo cáo: {new Date(startDate).toLocaleDateString('vi-VN')} - {new Date(endDate).toLocaleDateString('vi-VN')}</p>
             <p>Ngày trích xuất: {new Date().toLocaleString('vi-VN')}</p>
           </div>
@@ -183,44 +183,44 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
 
         {/* Quick Stats Summary Area */}
         <div className="grid grid-cols-4 gap-4">
-          <div className="p-5 bg-blue-50 border border-blue-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-blue-600 mb-2">
+          <div className="p-5 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-[1.5rem]">
+            <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400 mb-2">
               <Calendar size={18} />
               <span className="text-[10px] font-black uppercase tracking-widest">Tổng cuộc họp</span>
             </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.total}</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{reportStats.total}</p>
           </div>
-          <div className="p-5 bg-emerald-50 border border-emerald-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-emerald-600 mb-2">
+          <div className="p-5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-[1.5rem]">
+            <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400 mb-2">
               <CheckCircle size={18} />
               <span className="text-[10px] font-black uppercase tracking-widest">Đã thực hiện</span>
             </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.scheduled}</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{reportStats.scheduled}</p>
           </div>
-          <div className="p-5 bg-amber-50 border border-amber-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-amber-600 mb-2">
+          <div className="p-5 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-[1.5rem]">
+            <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400 mb-2">
               <AlertTriangle size={18} />
               <span className="text-[10px] font-black uppercase tracking-widest">Tạm hoãn</span>
             </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.postponed}</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{reportStats.postponed}</p>
           </div>
-          <div className="p-5 bg-red-50 border border-red-100 rounded-[1.5rem]">
-            <div className="flex items-center gap-3 text-red-600 mb-2">
+          <div className="p-5 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-[1.5rem]">
+            <div className="flex items-center gap-3 text-red-600 dark:text-red-400 mb-2">
               <Building2 size={18} />
               <span className="text-[10px] font-black uppercase tracking-widest">Số đơn vị</span>
             </div>
-            <p className="text-3xl font-black text-slate-900">{reportStats.uniqueUnits}</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{reportStats.uniqueUnits}</p>
           </div>
         </div>
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 gap-10">
           <div className="space-y-4">
-             <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+             <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center gap-3">
                <div className="w-1 h-4 bg-blue-600 rounded-full"></div>
                Biểu đồ phân bổ cuộc họp ({groupBy === 'unit' ? 'Theo đơn vị' : 'Theo thời gian'})
              </h3>
-             <div className="h-[350px] w-full bg-slate-50/30 p-6 rounded-[2rem] border border-slate-100">
+             <div className="h-[350px] w-full bg-slate-50/30 dark:bg-slate-900/30 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-700">
                <ResponsiveContainer width="100%" height="100%">
                  <BarChart data={statsData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
@@ -247,25 +247,25 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
 
         {/* Table Summary */}
         <div className="space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+          <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center gap-3">
             <div className="w-1 h-4 bg-amber-500 rounded-full"></div>
             Bảng tổng hợp dữ liệu (Theo {groupBy})
           </h3>
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
+          <div className="border border-slate-100 dark:border-slate-700 rounded-2xl overflow-hidden">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-900 text-white text-[10px] uppercase font-black tracking-widest">
+              <thead className="bg-slate-900 dark:bg-slate-950 text-white text-[10px] uppercase font-black tracking-widest">
                 <tr>
                   <th className="px-6 py-4">Tiêu chí phân nhóm</th>
                   <th className="px-6 py-4 text-center">Số lượng hội nghị</th>
                   <th className="px-6 py-4 text-right">Tỷ lệ đóng góp</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {statsData.map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-3.5 font-bold text-slate-700">{row.name}</td>
-                    <td className="px-6 py-3.5 text-center font-black text-blue-600 text-base">{row.value}</td>
-                    <td className="px-6 py-3.5 text-right font-bold text-slate-400">{((row.value / reportStats.total) * 100).toFixed(1)}%</td>
+                  <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="px-6 py-3.5 font-bold text-slate-700 dark:text-slate-300">{row.name}</td>
+                    <td className="px-6 py-3.5 text-center font-black text-blue-600 dark:text-blue-400 text-base">{row.value}</td>
+                    <td className="px-6 py-3.5 text-right font-bold text-slate-400 dark:text-slate-500">{((row.value / reportStats.total) * 100).toFixed(1)}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -275,13 +275,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
 
         {/* Detailed List */}
         <div className="space-y-4">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-3">
+          <h3 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] flex items-center gap-3">
             <div className="w-1 h-4 bg-emerald-500 rounded-full"></div>
             Thông tin chi tiết các cuộc họp
           </h3>
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
+          <div className="border border-slate-100 dark:border-slate-700 rounded-2xl overflow-hidden">
             <table className="w-full text-left text-[11px]">
-              <thead className="bg-slate-50 text-slate-500 text-[9px] uppercase font-black tracking-widest">
+              <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[9px] uppercase font-black tracking-widest">
                 <tr>
                   <th className="px-4 py-3"><div className="flex items-center gap-1"><FileText size={10} /> Tên hội nghị</div></th>
                   <th className="px-4 py-3"><div className="flex items-center gap-1"><Building2 size={10} /> Đơn vị chủ trì</div></th>
@@ -291,30 +291,30 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
                   <th className="px-4 py-3 text-right">Trạng thái</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-700">
                 {filteredMeetings.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-bold text-slate-900 max-w-[200px] leading-tight">
+                  <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <td className="px-4 py-3 font-bold text-slate-900 dark:text-white max-w-[200px] leading-tight">
                       <div className={m.status === 'CANCELLED' ? 'line-through opacity-50' : ''}>{m.title}</div>
                       {m.cancelReason && <div className="text-[9px] font-medium text-red-500 mt-1 italic">Lý do: {m.cancelReason}</div>}
                     </td>
-                    <td className="px-4 py-3 font-medium text-slate-600">{m.hostUnit}</td>
-                    <td className="px-4 py-3 text-slate-500 font-bold whitespace-nowrap">
+                    <td className="px-4 py-3 font-medium text-slate-600 dark:text-slate-400">{m.hostUnit}</td>
+                    <td className="px-4 py-3 text-slate-500 dark:text-slate-400 font-bold whitespace-nowrap">
                       {new Date(m.startTime).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })}
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black">{m.endpoints.length}</span>
+                      <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md font-black">{m.endpoints.length}</span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className="px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-md font-black">{m.participants.length}</span>
+                      <span className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md font-black">{m.participants.length}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {m.status === 'CANCELLED' ? (
-                        <span className="px-2 py-0.5 bg-red-100 text-red-600 text-[8px] font-black uppercase rounded">Đã huỷ</span>
+                        <span className="px-2 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[8px] font-black uppercase rounded">Đã huỷ</span>
                       ) : m.status === 'POSTPONED' ? (
-                        <span className="px-2 py-0.5 bg-amber-100 text-amber-600 text-[8px] font-black uppercase rounded">Hoãn</span>
+                        <span className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 text-[8px] font-black uppercase rounded">Hoãn</span>
                       ) : (
-                        <span className="px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[8px] font-black uppercase rounded">Hợp lệ</span>
+                        <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase rounded">Hợp lệ</span>
                       )}
                     </td>
                   </tr>
@@ -325,17 +325,17 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ meetings, currentUser }) => {
         </div>
 
         {/* Footer Signature */}
-        <div className="pt-20 flex justify-between border-t border-slate-100">
+        <div className="pt-20 flex justify-between border-t border-slate-100 dark:border-slate-700">
            <div className="max-w-xs space-y-2">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Ghi chú hệ thống</p>
-              <p className="text-[9px] italic text-slate-400 leading-relaxed font-medium">Báo cáo được khởi tạo tự động. Các dữ liệu về thời gian và đơn vị được ghi nhận tại thời điểm kết thúc hội nghị.</p>
+              <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Ghi chú hệ thống</p>
+              <p className="text-[9px] italic text-slate-400 dark:text-slate-500 leading-relaxed font-medium">Báo cáo được khởi tạo tự động. Các dữ liệu về thời gian và đơn vị được ghi nhận tại thời điểm kết thúc hội nghị.</p>
            </div>
            <div className="text-center w-60 space-y-20">
               <div className="space-y-1">
-                 <p className="font-black text-[10px] uppercase tracking-widest text-slate-900">Người lập báo cáo</p>
-                 <p className="text-[9px] text-slate-400 font-bold">(Ký và ghi rõ họ tên)</p>
+                 <p className="font-black text-[10px] uppercase tracking-widest text-slate-900 dark:text-white">Người lập báo cáo</p>
+                 <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold">(Ký và ghi rõ họ tên)</p>
               </div>
-              <p className="font-black text-xs uppercase text-slate-900 italic">
+              <p className="font-black text-xs uppercase text-slate-900 dark:text-white italic">
                  {currentUser?.fullName || 'Quản trị viên hệ thống'}
               </p>
            </div>

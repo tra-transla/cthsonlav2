@@ -1,16 +1,18 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { User, SystemSettings, Meeting } from '../types';
-import { ExternalLink, FileText, Lock, User as UserIcon, ArrowRight, Calendar, Clock, MapPin, Users as UsersIcon, CheckCircle2, AlertTriangle, XCircle, Activity, Video } from 'lucide-react';
+import { ExternalLink, FileText, Lock, User as UserIcon, ArrowRight, Calendar, Clock, MapPin, Users as UsersIcon, CheckCircle2, AlertTriangle, XCircle, Activity, Video, Sun, Moon } from 'lucide-react';
 
 interface LoginViewProps {
   users: User[];
   meetings: Meeting[];
   onLoginSuccess: (user: User) => void;
   systemSettings: SystemSettings;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
-const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, systemSettings }) => {
+const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, systemSettings, isDarkMode, onToggleDarkMode }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,13 +99,24 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden font-sans bg-slate-950">
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden font-sans bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
+      {/* Dark Mode Toggle for Login Page */}
+      <div className="absolute top-6 right-6 z-[100]">
+        <button 
+          onClick={onToggleDarkMode}
+          className="p-3 bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-2xl text-slate-600 dark:text-slate-400 hover:bg-white/20 dark:hover:bg-white/10 transition-all shadow-xl"
+          title={isDarkMode ? "Chế độ sáng" : "Chế độ tối"}
+        >
+          {isDarkMode ? <Sun size={20} className="text-yellow-500" /> : <Moon size={20} className="text-slate-600" />}
+        </button>
+      </div>
+
       {/* Background Image - Modern & Smooth */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[30000ms] scale-110 animate-slow-zoom"
         style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000")' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/95 via-slate-900/80 to-slate-950/90"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-slate-100/40 to-white/90 dark:from-slate-950/95 dark:via-slate-900/80 dark:to-slate-950/90 transition-colors duration-500"></div>
       </div>
 
       <div className="w-full max-w-7xl px-6 relative z-10 flex flex-col lg:flex-row items-stretch gap-10 py-8 lg:py-12 min-h-[90vh]">
@@ -113,7 +126,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
           <div className="shrink-0">
             <div className="relative inline-flex mb-4">
                <div className="absolute -inset-4 bg-blue-500/20 rounded-full blur-2xl"></div>
-               <div className="relative p-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-[1.5rem] shadow-2xl flex items-center justify-center w-16 h-16 overflow-hidden">
+               <div className="relative p-4 bg-white dark:bg-white/10 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-[1.5rem] shadow-2xl flex items-center justify-center w-16 h-16 overflow-hidden">
                   {systemSettings.logoBase64 ? (
                     <img src={systemSettings.logoBase64} alt="System Logo" className="max-w-full max-h-full object-contain" />
                   ) : (
@@ -122,7 +135,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                </div>
             </div>
             <h1 className="flex flex-col items-start text-left space-y-1">
-              <span className="text-2xl lg:text-3xl font-black text-white uppercase tracking-tighter leading-tight">
+              <span className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-tight">
                 {systemSettings.shortName}
               </span>
               <div className="flex items-center gap-3">
@@ -141,10 +154,10 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                { label: 'Cuộc họp Tháng', val: stats.month, color: 'text-emerald-400', icon: <Clock size={14} /> },
                { label: 'Cuộc họp Năm', val: stats.year, color: 'text-amber-400', icon: <Activity size={14} /> }
              ].map((s, idx) => (
-               <div key={idx} className="bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex flex-col">
+               <div key={idx} className="bg-white dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-white/10 p-4 rounded-2xl flex flex-col shadow-sm dark:shadow-none">
                   <div className="flex items-center gap-2 mb-1 opacity-60">
                     <span className={s.color}>{s.icon}</span>
-                    <span className="text-[8px] font-black text-white uppercase tracking-widest">{s.label}</span>
+                    <span className="text-[8px] font-black text-slate-500 dark:text-white uppercase tracking-widest">{s.label}</span>
                   </div>
                   <span className={`text-2xl font-black ${s.color}`}>{s.val}</span>
                </div>
@@ -158,7 +171,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                 <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg border border-blue-400/20">
                   <UsersIcon size={16} />
                 </div>
-                <h3 className="text-xs font-black text-white uppercase tracking-widest">Lịch họp sắp tới</h3>
+                <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-widest">Lịch họp sắp tới</h3>
               </div>
             </div>
             
@@ -167,27 +180,27 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                 upcomingMeetings.map((m) => {
                   const isCancelled = m.status === 'CANCELLED';
                   const isPostponed = m.status === 'POSTPONED';
-
+ 
                   return (
                     <div 
                       key={m.id}
                       onClick={() => setSelectedPublicMeeting(m)}
-                      className={`group bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/5 hover:border-blue-500/30 p-4 rounded-[1.5rem] transition-all cursor-pointer flex items-center gap-4 ${
+                      className={`group bg-white dark:bg-white/5 hover:bg-blue-50 dark:hover:bg-white/10 backdrop-blur-md border border-gray-100 dark:border-white/5 hover:border-blue-500/30 p-4 rounded-[1.5rem] transition-all cursor-pointer flex items-center gap-4 shadow-sm dark:shadow-none ${
                         isCancelled ? 'opacity-60 grayscale-[0.5]' : ''
                       }`}
                     >
-                      <div className="flex flex-col items-center justify-center min-w-[85px] border-r border-white/10 pr-4">
-                        <span className={`text-lg font-black ${isCancelled ? 'text-red-400' : isPostponed ? 'text-amber-400' : 'text-blue-400'}`}>
+                      <div className="flex flex-col items-center justify-center min-w-[85px] border-r border-gray-100 dark:border-white/10 pr-4">
+                        <span className={`text-lg font-black ${isCancelled ? 'text-red-400' : isPostponed ? 'text-amber-400' : 'text-blue-600 dark:text-blue-400'}`}>
                           {formatMeetingTime(m.startTime)}
                         </span>
-                        <span className="text-[9px] font-black text-white/30 uppercase mt-1 text-center leading-tight">
+                        <span className="text-[9px] font-black text-slate-400 dark:text-white/30 uppercase mt-1 text-center leading-tight">
                           {formatMeetingDate(m.startTime)}
                         </span>
                       </div>
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <h4 className={`text-sm font-bold text-white group-hover:text-blue-300 transition-colors line-clamp-1 ${isCancelled ? 'line-through' : ''}`}>
+                          <h4 className={`text-sm font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors line-clamp-1 ${isCancelled ? 'line-through' : ''}`}>
                             {m.title}
                           </h4>
                           {isCancelled ? (
@@ -197,17 +210,17 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                           ) : null}
                         </div>
                         <div className="flex items-center gap-3 overflow-hidden flex-wrap">
-                          <span className="text-[10px] text-white/40 font-bold uppercase whitespace-nowrap">Chủ trì: {m.chairPerson}</span>
-                          <div className="w-1 h-1 rounded-full bg-white/10 shrink-0 hidden sm:block"></div>
-                          <span className="text-[10px] text-blue-400/60 font-black uppercase truncate">{m.hostUnit}</span>
+                          <span className="text-[10px] text-slate-500 dark:text-white/40 font-bold uppercase whitespace-nowrap">Chủ trì: {m.chairPerson}</span>
+                          <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-white/10 shrink-0 hidden sm:block"></div>
+                          <span className="text-[10px] text-blue-600 dark:text-blue-400/60 font-black uppercase truncate">{m.hostUnit}</span>
                         </div>
                       </div>
-
+ 
                       <div className="shrink-0 flex items-center gap-2">
                         {m.invitationLink && (
                           <button 
                             onClick={(e) => handleExternalLink(e, m.invitationLink)}
-                            className="p-2.5 bg-indigo-600/20 text-indigo-400 border border-indigo-500/20 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-lg shadow-indigo-900/10 z-20"
+                            className="p-2.5 bg-indigo-600/10 dark:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20 rounded-xl hover:bg-indigo-600 hover:text-white transition-all shadow-lg shadow-indigo-900/5 z-20"
                             title="Xem giấy mời"
                           >
                             <FileText size={16} />
@@ -216,7 +229,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                         <button 
                           type="button"
                           onClick={(e) => { e.stopPropagation(); setSelectedPublicMeeting(m); }}
-                          className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-white/30 group-hover:text-white group-hover:bg-blue-600 group-hover:border-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 z-20"
+                          className="p-2.5 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl text-slate-400 dark:text-white/30 group-hover:text-white group-hover:bg-blue-600 group-hover:border-blue-500 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 z-20"
                         >
                           <ArrowRight size={16} />
                         </button>
@@ -225,8 +238,8 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
                   );
                 })
               ) : (
-                <div className="py-20 text-center bg-white/5 border border-dashed border-white/10 rounded-[2rem]">
-                  <p className="text-xs font-bold text-white/20 uppercase tracking-widest">Hiện chưa có lịch họp nào được lên lịch</p>
+                <div className="py-20 text-center bg-white dark:bg-white/5 border border-dashed border-gray-200 dark:border-white/10 rounded-[2rem]">
+                  <p className="text-xs font-bold text-slate-300 dark:text-white/20 uppercase tracking-widest">Hiện chưa có lịch họp nào được lên lịch</p>
                 </div>
               )}
             </div>
@@ -237,36 +250,36 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
         <div className="w-full lg:w-[400px] flex flex-col justify-center shrink-0 animate-in fade-in zoom-in duration-1000 delay-500">
           {/* Digital Clock Header - Single Line Layout */}
           <div className="mb-6 flex justify-center">
-            <div className="px-6 py-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full shadow-xl flex items-center gap-4 group">
+            <div className="px-6 py-2.5 bg-white dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-full shadow-xl flex items-center gap-4 group">
                <div className="flex items-baseline gap-1">
-                 <span className="text-2xl font-black text-white font-mono tracking-tighter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+                 <span className="text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tighter drop-shadow-[0_0_8px_rgba(59,130,246,0.1)] dark:drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
                    {formatTime(now).split(':')[0]}
-                   <span className="animate-pulse mx-0.5 text-blue-400">:</span>
+                   <span className="animate-pulse mx-0.5 text-blue-600 dark:text-blue-400">:</span>
                    {formatTime(now).split(':')[1]}
                  </span>
-                 <span className="text-[10px] font-black text-blue-400 font-mono w-4">
+                 <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 font-mono w-4">
                    {formatTime(now).split(':')[2]}
                  </span>
                </div>
                
-               <div className="w-px h-4 bg-white/10"></div>
+               <div className="w-px h-4 bg-gray-200 dark:bg-white/10"></div>
                
                <div className="flex items-center gap-2">
-                 <Calendar size={12} className="text-blue-400/60" />
-                 <span className="text-[10px] font-black text-white/50 uppercase tracking-[0.15em]">
+                 <Calendar size={12} className="text-blue-600 dark:text-blue-400/60" />
+                 <span className="text-[10px] font-black text-slate-500 dark:text-white/50 uppercase tracking-[0.15em]">
                    {formatDate(now)}
                  </span>
                </div>
             </div>
           </div>
-
-          <div className="bg-white/10 backdrop-blur-[30px] rounded-[2.5rem] p-8 lg:p-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border border-white/20 w-full flex flex-col relative overflow-hidden group">
+ 
+          <div className="bg-white dark:bg-white/10 backdrop-blur-[30px] rounded-[2.5rem] p-8 lg:p-10 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.1)] dark:shadow-[0_40px_100px_-20px_rgba(0,0,0,0.5)] border border-gray-200 dark:border-white/20 w-full flex flex-col relative overflow-hidden group">
             <div className="mb-8 text-center">
-               <div className="inline-block px-4 py-1.5 bg-blue-500/10 border border-blue-400/20 rounded-full">
-                <p className="text-[9px] font-black text-blue-400 uppercase tracking-[0.4em]">ĐĂNG NHẬP HỆ THỐNG</p>
+               <div className="inline-block px-4 py-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-400/20 rounded-full">
+                <p className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.4em]">ĐĂNG NHẬP HỆ THỐNG</p>
             </div>
             <div>
-            <p className="text-white/40 text-[9px] font-black tracking-[0.4em] leading-relaxed">
+            <p className="text-slate-400 dark:text-white/40 text-[9px] font-black tracking-[0.4em] leading-relaxed mt-2">
                 <span className="opacity-100">Lưu ý: Chỉ dành cho quản trị hệ thống</span>
               </p>
               </div>
@@ -274,37 +287,37 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
             
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-3 animate-shake text-white">
-                  <XCircle className="w-5 h-5 text-red-400 shrink-0" />
+                <div className="p-4 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-2xl flex items-center gap-3 animate-shake text-red-600 dark:text-white">
+                  <XCircle className="w-5 h-5 text-red-500 dark:text-red-400 shrink-0" />
                   <p className="text-[10px] font-black uppercase tracking-widest leading-tight">{error}</p>
                 </div>
               )}
-
+ 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Tên tài khoản</label>
+                <label className="text-[9px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.3em] ml-2">Tên tài khoản</label>
                 <div className="relative group">
                   <input 
                     type="text" 
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white/10 outline-none transition-all text-white font-bold placeholder:text-white/20 text-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-slate-900 dark:text-white font-bold placeholder:text-slate-300 dark:placeholder:text-white/20 text-sm"
                     placeholder="Tên đăng nhập..."
                   />
-                  <UserIcon className="w-5 h-5 absolute left-4 top-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
+                  <UserIcon className="w-5 h-5 absolute left-4 top-4 text-slate-300 dark:text-white/20 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors" />
                 </div>
               </div>
-
+ 
               <div className="space-y-2">
-                <label className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em] ml-2">Mật khẩu</label>
+                <label className="text-[9px] font-black text-slate-400 dark:text-white/30 uppercase tracking-[0.3em] ml-2">Mật khẩu</label>
                 <div className="relative group">
                   <input 
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white/10 outline-none transition-all text-white font-bold placeholder:text-white/20 text-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-[1.25rem] focus:ring-8 focus:ring-blue-500/10 focus:border-blue-500/50 focus:bg-white dark:focus:bg-white/10 outline-none transition-all text-slate-900 dark:text-white font-bold placeholder:text-slate-300 dark:placeholder:text-white/20 text-sm"
                     placeholder="••••••••"
                   />
-                  <Lock className="w-5 h-5 absolute left-4 top-4 text-white/20 group-focus-within:text-blue-400 transition-colors" />
+                  <Lock className="w-5 h-5 absolute left-4 top-4 text-slate-300 dark:text-white/20 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors" />
                 </div>
               </div>
 
@@ -328,8 +341,8 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
               </button>
             </form>
 
-            <div className="mt-10 pt-6 border-t border-white/5 text-center">
-              <p className="text-white/40 text-[9px] font-black uppercase tracking-[0.4em] leading-relaxed">
+            <div className="mt-10 pt-6 border-t border-gray-100 dark:border-white/5 text-center">
+              <p className="text-slate-400 dark:text-white/40 text-[9px] font-black uppercase tracking-[0.4em] leading-relaxed">
                 <span className="opacity-50">© 2026 • Trần Trà • VIETTEL SƠN LA</span>
               </p>
             </div>

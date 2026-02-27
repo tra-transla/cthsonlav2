@@ -21,17 +21,17 @@ const StatCard: React.FC<StatCardProps> = ({
   tooltipTitle = "Chi tiết chỉ số"
 }) => {
   return (
-    <div className="relative group bg-white p-6 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between transition-all duration-500 hover:shadow-[0_20px_50px_rgba(59,130,246,0.12)] hover:border-blue-200 hover:-translate-y-2 overflow-visible">
+    <div className="relative group bg-white dark:bg-slate-900 p-6 rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.02)] dark:shadow-none border border-slate-100 dark:border-slate-800 flex flex-col justify-between transition-all duration-500 hover:shadow-[0_20px_50px_rgba(59,130,246,0.08)] hover:border-blue-200 dark:hover:border-blue-500/50 hover:-translate-y-2 overflow-visible">
       <div className="flex items-center justify-between mb-6">
-        <div className="p-4 bg-blue-50 text-blue-600 rounded-[1.25rem] group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-sm">
+        <div className="p-4 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded-[1.25rem] group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-sm">
           {/* Fix: Validate that icon is a React element and use React.ReactElement<any> to allow passing 'size' and 'strokeWidth' props */}
           {React.isValidElement(icon) && React.cloneElement(icon as React.ReactElement<any>, { size: 24, strokeWidth: 2.5 })}
         </div>
         {trend && (
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
             trendUp 
-              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-              : 'bg-red-50 text-red-600 border border-red-100'
+              ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20' 
+              : 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20'
           }`}>
             <span className="text-xs">{trendUp ? '↑' : '↓'}</span>
             {trend}
@@ -40,9 +40,9 @@ const StatCard: React.FC<StatCardProps> = ({
       </div>
       
       <div>
-        <p className="text-[11px] text-gray-400 font-black uppercase tracking-[0.2em] mb-1">{title}</p>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-black uppercase tracking-[0.2em] mb-1">{title}</p>
         <div className="flex items-baseline gap-2">
-          <h3 className="text-4xl font-black text-gray-900 tracking-tighter group-hover:text-blue-700 transition-colors duration-300">
+          <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors duration-300">
             {value}
           </h3>
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mb-1.5"></div>

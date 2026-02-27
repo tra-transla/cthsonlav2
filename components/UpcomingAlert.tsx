@@ -38,7 +38,7 @@ const UpcomingAlert: React.FC<UpcomingAlertProps> = ({ meeting, onViewDetail }) 
   }, [meeting.startTime]);
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-[2.5rem] p-6 md:p-8 text-white shadow-2xl shadow-blue-200 group animate-in slide-in-from-top-4 duration-700">
+    <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-[2.5rem] p-6 md:p-8 text-white shadow-2xl shadow-blue-200 dark:shadow-none group animate-in slide-in-from-top-4 duration-700">
       {/* Background Decorative Circles */}
       <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-1000"></div>
       <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-red-400/20 rounded-full blur-3xl"></div>

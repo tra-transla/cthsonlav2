@@ -140,13 +140,13 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex bg-gray-100 p-1 rounded-lg overflow-x-auto no-scrollbar">
+      <div className="flex flex-col md:flex-row justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm">
+        <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-lg overflow-x-auto no-scrollbar">
           {['units', 'staff', 'groups', 'endpoints', 'settings'].map((tab) => (
             <button 
               key={tab}
               onClick={() => { setActiveTab(tab as any); setSearchTerm(''); }}
-              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all whitespace-nowrap ${activeTab === tab ? 'bg-white dark:bg-slate-700 shadow-sm' : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200'}`}
               style={activeTab === tab ? primaryTextStyle : {}}
             >
               {tab === 'units' ? 'Đơn vị' : 
@@ -163,11 +163,11 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
               <input 
                 type="text" 
                 placeholder="Tìm kiếm..."
-                className="pl-9 pr-4 py-1.5 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-48 transition-all"
+                className="pl-9 pr-4 py-1.5 text-sm border border-gray-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-48 transition-all bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <svg className="w-4 h-4 absolute left-3 top-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              <svg className="w-4 h-4 absolute left-3 top-2 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
             <button 
               onClick={() => openModal()}
@@ -180,21 +180,21 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden overflow-x-auto">
         {activeTab === 'units' && (
           <table className="w-full text-left text-sm min-w-[600px]">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
+            <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Tên đơn vị</th>
                 <th className="px-6 py-4">Mã đơn vị</th>
                 <th className="px-6 py-4 text-right">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {filteredUnits.map(unit => (
-                <tr key={unit.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900">{unit.name}</td>
-                  <td className="px-6 py-4 text-gray-500 font-mono text-xs">{unit.code}</td>
+                <tr key={unit.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">{unit.name}</td>
+                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400 font-mono text-xs">{unit.code}</td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button onClick={() => openModal(unit)} className="text-blue-600 font-bold hover:underline">Sửa</button>
                     <button onClick={() => onDeleteUnit(unit.id)} className="text-red-600 font-bold hover:underline">Xóa</button>
@@ -207,7 +207,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
         {activeTab === 'staff' && (
           <table className="w-full text-left text-sm min-w-[800px]">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
+            <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Cán bộ chủ trì</th>
                 <th className="px-6 py-4">Chức vụ</th>
@@ -216,27 +216,27 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                 <th className="px-6 py-4 text-right">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {filteredStaff.map(s => (
-                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={s.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-black text-xs">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs">
                         {s.fullName?.split(' ').filter(Boolean).pop()?.[0] || 'C'}
                       </div>
-                      <span className="font-bold text-gray-900">{s.fullName}</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{s.fullName}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 font-medium">{s.position}</td>
-                  <td className="px-6 py-4 text-gray-500">
-                    <span className="px-2.5 py-1 bg-slate-100 rounded-lg text-[10px] font-black uppercase tracking-tight text-slate-600 border border-slate-200">
+                  <td className="px-6 py-4 text-gray-600 dark:text-slate-300 font-medium">{s.position}</td>
+                  <td className="px-6 py-4 text-gray-500 dark:text-slate-400">
+                    <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-black uppercase tracking-tight text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                       {getUnitName(s.unitId)}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-[10px] space-y-0.5">
-                      <p className="text-gray-400 uppercase font-black tracking-tighter">E: {s.email || '---'}</p>
-                      <p className="text-gray-400 uppercase font-black tracking-tighter">P: {s.phone || '---'}</p>
+                      <p className="text-gray-400 dark:text-slate-500 uppercase font-black tracking-tighter">E: {s.email || '---'}</p>
+                      <p className="text-gray-400 dark:text-slate-500 uppercase font-black tracking-tighter">P: {s.phone || '---'}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right space-x-3">
@@ -256,18 +256,18 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
         {activeTab === 'groups' && (
           <table className="w-full text-left text-sm min-w-[600px]">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
+            <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Tên nhóm</th>
                 <th className="px-6 py-4">Mô tả</th>
                 <th className="px-6 py-4 text-right">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {filteredGroups.map(g => (
-                <tr key={g.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900">{g.name}</td>
-                  <td className="px-6 py-4 text-gray-600">{g.description || '---'}</td>
+                <tr key={g.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">{g.name}</td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-slate-300">{g.description || '---'}</td>
                   <td className="px-6 py-4 text-right space-x-2">
                     <button onClick={() => openModal(g)} className="text-blue-600 font-bold hover:underline">Sửa</button>
                     <button onClick={() => onDeleteGroup(g.id)} className="text-red-600 font-bold hover:underline">Xóa</button>
@@ -280,7 +280,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
         {activeTab === 'endpoints' && (
           <table className="w-full text-left text-sm min-w-[600px]">
-            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
+            <thead className="bg-gray-50 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 text-xs uppercase font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Tên điểm cầu</th>
                 <th className="px-6 py-4">Vị trí</th>
@@ -288,14 +288,14 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                 <th className="px-6 py-4 text-right">Hành động</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {filteredEndpoints.map(e => (
-                <tr key={e.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 font-bold text-gray-900">{e.name}</td>
-                  <td className="px-6 py-4 text-gray-600">{e.location}</td>
+                <tr key={e.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                  <td className="px-6 py-4 font-bold text-gray-900 dark:text-white">{e.name}</td>
+                  <td className="px-6 py-4 text-gray-600 dark:text-slate-300">{e.location}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest ${
-                      e.status === EndpointStatus.CONNECTED ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                      e.status === EndpointStatus.CONNECTED ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400' : 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
                     }`}>
                       {e.status === EndpointStatus.CONNECTED ? 'Online' : 'Offline'}
                     </span>
@@ -312,22 +312,22 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
         {activeTab === 'settings' && (
           <div className="p-8 max-w-2xl space-y-8">
-            <h4 className="text-lg font-black text-gray-900 uppercase tracking-tight">Cấu hình hệ thống</h4>
+            <h4 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">Cấu hình hệ thống</h4>
             
             <div className="space-y-6">
               {/* Logo Section */}
               <div className="space-y-4">
-                <label className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                  <ImageIcon size={18} className="text-blue-600" />
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300 flex items-center gap-2">
+                  <ImageIcon size={18} className="text-blue-600 dark:text-blue-400" />
                   Logo hệ thống (Base64)
                 </label>
                 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 bg-gray-50 border border-dashed border-gray-300 rounded-[2rem]">
-                  <div className="w-32 h-32 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-6 bg-gray-50 dark:bg-slate-800/50 border border-dashed border-gray-300 dark:border-slate-700 rounded-[2rem]">
+                  <div className="w-32 h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm flex items-center justify-center overflow-hidden shrink-0">
                     {settingsForm.logoBase64 ? (
                       <img src={settingsForm.logoBase64} alt="Preview" className="max-w-full max-h-full object-contain" />
                     ) : (
-                      <div className="text-gray-300 flex flex-col items-center">
+                      <div className="text-gray-300 dark:text-slate-600 flex flex-col items-center">
                         <ImageIcon size={32} />
                         <span className="text-[9px] font-bold mt-2 uppercase">No Logo</span>
                       </div>
@@ -335,7 +335,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                   </div>
                   
                   <div className="space-y-3">
-                    <p className="text-xs text-gray-500 leading-relaxed">
+                    <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed">
                       Logo sẽ hiển thị ở Sidebar và trang Đăng nhập. <br/>
                       Định dạng khuyên dùng: <b>PNG hoặc SVG (Nền trong suốt)</b>. <br/>
                       Dung lượng tối đa: <b>1MB</b>.
@@ -350,7 +350,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                       />
                       <button 
                         onClick={() => fileInputRef.current?.click()}
-                        className="px-4 py-2 bg-white border border-gray-200 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center gap-2 shadow-sm"
+                        className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-blue-600 dark:text-blue-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm"
                       >
                         <Upload size={14} />
                         Tải ảnh lên
@@ -358,7 +358,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
                       {settingsForm.logoBase64 && (
                         <button 
                           onClick={removeLogo}
-                          className="px-4 py-2 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all flex items-center gap-2"
+                          className="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/40 transition-all flex items-center gap-2"
                         >
                           <Trash2 size={14} />
                           Xóa logo
@@ -370,33 +370,33 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Tên hệ thống</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Tên hệ thống</label>
                 <input 
-                  type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 outline-none font-bold"
+                  type="text" className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white"
                   value={settingsForm.systemName}
                   onChange={e => setSettingsForm({...settingsForm, systemName: e.target.value})}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Tên viết tắt (Sidebar)</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Tên viết tắt (Sidebar)</label>
                 <input 
-                  type="text" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 outline-none font-bold"
+                  type="text" className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white"
                   value={settingsForm.shortName}
                   onChange={e => setSettingsForm({...settingsForm, shortName: e.target.value})}
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Màu chủ đạo</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Màu chủ đạo</label>
                 <div className="flex gap-3">
                   <input 
-                    type="color" className="w-12 h-12 p-1 bg-white border border-gray-200 rounded-xl cursor-pointer"
+                    type="color" className="w-12 h-12 p-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl cursor-pointer"
                     value={settingsForm.primaryColor}
                     onChange={e => setSettingsForm({...settingsForm, primaryColor: e.target.value})}
                   />
                   <input 
-                    type="text" className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 outline-none font-mono"
+                    type="text" className="flex-1 px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 outline-none font-mono text-gray-900 dark:text-white"
                     value={settingsForm.primaryColor}
                     onChange={e => setSettingsForm({...settingsForm, primaryColor: e.target.value})}
                   />
@@ -417,9 +417,9 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl p-8 overflow-hidden animate-in zoom-in-95">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] shadow-2xl p-8 overflow-hidden animate-in zoom-in-95">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
                 {editingItem ? 'Cập nhật' : 'Thêm mới'} {
                   activeTab === 'units' ? 'Đơn vị' : 
                   activeTab === 'staff' ? 'Cán bộ' : 
@@ -434,41 +434,41 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
             <form onSubmit={handleSave} className="space-y-4">
                 {activeTab === 'units' && (
                   <>
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none font-bold" placeholder="Tên đơn vị" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none font-mono" placeholder="Mã đơn vị" value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} />
-                    <textarea className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none" placeholder="Mô tả" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white" placeholder="Tên đơn vị" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none font-mono text-gray-900 dark:text-white" placeholder="Mã đơn vị" value={formData.code || ''} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} />
+                    <textarea className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none text-gray-900 dark:text-white" placeholder="Mô tả" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
                   </>
                 )}
 
                 {activeTab === 'staff' && (
                   <>
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none font-bold" placeholder="Họ và tên" value={formData.fullName || ''} onChange={e => setFormData({...formData, fullName: e.target.value})} />
-                    <select required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none font-bold" value={formData.unitId || ''} onChange={e => setFormData({...formData, unitId: e.target.value})}>
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white" placeholder="Họ và tên" value={formData.fullName || ''} onChange={e => setFormData({...formData, fullName: e.target.value})} />
+                    <select required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white" value={formData.unitId || ''} onChange={e => setFormData({...formData, unitId: e.target.value})}>
                       <option value="">-- Chọn đơn vị --</option>
                       {units.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                     </select>
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none" placeholder="Chức vụ" value={formData.position || ''} onChange={e => setFormData({...formData, position: e.target.value})} />
-                    <input className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none" placeholder="Email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} />
-                    <input className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none" placeholder="Số điện thoại" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none text-gray-900 dark:text-white" placeholder="Chức vụ" value={formData.position || ''} onChange={e => setFormData({...formData, position: e.target.value})} />
+                    <input className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none text-gray-900 dark:text-white" placeholder="Email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} />
+                    <input className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none text-gray-900 dark:text-white" placeholder="Số điện thoại" value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
                   </>
                 )}
 
                 {activeTab === 'groups' && (
                   <>
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none font-bold" placeholder="Tên nhóm thành phần" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
-                    <textarea className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none" placeholder="Mô tả" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white" placeholder="Tên nhóm thành phần" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+                    <textarea className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none text-gray-900 dark:text-white" placeholder="Mô tả" value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
                   </>
                 )}
 
                 {activeTab === 'endpoints' && (
                   <>
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none font-bold" placeholder="Tên điểm cầu" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
-                    <input required className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 outline-none" placeholder="Vị trí / Địa điểm" value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} />
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none font-bold text-gray-900 dark:text-white" placeholder="Tên điểm cầu" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+                    <input required className="w-full px-5 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 outline-none text-gray-900 dark:text-white" placeholder="Vị trí / Địa điểm" value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} />
                   </>
                 )}
 
                 <div className="flex gap-4 pt-4">
-                  <button type="button" onClick={closeModal} className="flex-1 py-3 border border-gray-200 rounded-2xl font-bold uppercase text-xs tracking-widest">Hủy</button>
+                  <button type="button" onClick={closeModal} className="flex-1 py-3 border border-gray-200 dark:border-slate-700 rounded-2xl font-bold uppercase text-xs tracking-widest text-gray-500 dark:text-slate-400">Hủy</button>
                   <button type="submit" style={primaryBgStyle} className="flex-1 py-3 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl">Lưu</button>
                 </div>
             </form>

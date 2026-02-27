@@ -154,10 +154,10 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col max-h-[95vh] animate-in zoom-in-95 duration-200">
-        <div className="p-4 md:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-3xl shrink-0">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-5xl rounded-3xl shadow-2xl flex flex-col max-h-[95vh] animate-in zoom-in-95 duration-200">
+        <div className="p-4 md:p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50 rounded-t-3xl shrink-0">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl shadow-lg text-white shrink-0 ${editingMeeting ? 'bg-emerald-600 shadow-emerald-100' : 'bg-blue-600 shadow-blue-100'}`}>
+            <div className={`p-3 rounded-2xl shadow-lg text-white shrink-0 ${editingMeeting ? 'bg-emerald-600 shadow-emerald-100 dark:shadow-none' : 'bg-blue-600 shadow-blue-100 dark:shadow-none'}`}>
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {editingMeeting ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -167,11 +167,11 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
               </svg>
             </div>
             <div>
-              <h3 className="text-lg md:text-xl font-bold text-gray-900">{editingMeeting ? 'Cập nhật cuộc họp' : 'Cuộc họp mới'}</h3>
-              <p className="text-xs text-gray-500 mt-1 font-medium hidden sm:block">{editingMeeting ? `Mã: ${editingMeeting.id}` : 'Điền thông tin chi tiết bên dưới'}</p>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">{editingMeeting ? 'Cập nhật cuộc họp' : 'Cuộc họp mới'}</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 font-medium hidden sm:block">{editingMeeting ? `Mã: ${editingMeeting.id}` : 'Điền thông tin chi tiết bên dưới'}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-2 hover:bg-white rounded-full transition-all border border-transparent hover:border-gray-100">
+          <button onClick={onClose} className="text-gray-400 dark:text-slate-500 hover:text-gray-600 dark:hover:text-slate-300 p-2 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-700">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
         </div>
@@ -179,14 +179,14 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
             <div className="lg:col-span-7 space-y-6">
-              <h4 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] border-l-4 border-blue-600 pl-3">Nội dung & Thời gian</h4>
+              <h4 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] border-l-4 border-blue-600 dark:border-blue-400 pl-3">Nội dung & Thời gian</h4>
               
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Chủ đề cuộc họp *</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Chủ đề cuộc họp *</label>
                 <input 
                   required
                   type="text" 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all text-gray-900 dark:text-white"
                   placeholder="Nhập tiêu đề chi tiết của cuộc họp..."
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
@@ -195,31 +195,31 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Đơn vị chủ trì *</label>
+                  <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Đơn vị chủ trì *</label>
                   <select 
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all appearance-none cursor-pointer text-gray-900 dark:text-white"
                     value={formData.hostUnitId}
                     onChange={handleUnitChange}
                   >
                     <option value="">-- Chọn đơn vị --</option>
                     {units.map(u => (
-                      <option key={u.id} value={u.id}>{u.name} ({u.code})</option>
+                      <option key={u.id} value={u.id} className="dark:bg-slate-800">{u.name} ({u.code})</option>
                     ))}
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Cán bộ chủ trì *</label>
+                  <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Cán bộ chủ trì *</label>
                   <select 
                     required
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all appearance-none cursor-pointer text-gray-900 dark:text-white"
                     value={formData.chairPersonId}
                     onChange={handleStaffChange}
                     disabled={!formData.hostUnitId}
                   >
-                    <option value="">{formData.hostUnitId ? '-- Chọn cán bộ --' : '-- Chọn đơn vị trước --'}</option>
+                    <option value="" className="dark:bg-slate-800">{formData.hostUnitId ? '-- Chọn cán bộ --' : '-- Chọn đơn vị trước --'}</option>
                     {filteredStaffForUnit.map(s => (
-                      <option key={s.id} value={s.id}>{s.fullName} - {s.position}</option>
+                      <option key={s.id} value={s.id} className="dark:bg-slate-800">{s.fullName} - {s.position}</option>
                     ))}
                   </select>
                 </div>
@@ -227,21 +227,21 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Thời điểm bắt đầu *</label>
+                  <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Thời điểm bắt đầu *</label>
                   <input 
                     required
                     type="datetime-local" 
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all text-gray-900 dark:text-white"
                     value={formData.startTime}
                     onChange={e => setFormData({...formData, startTime: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-gray-700">Dự kiến kết thúc *</label>
+                  <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Dự kiến kết thúc *</label>
                   <input 
                     required
                     type="datetime-local" 
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all text-gray-900 dark:text-white"
                     value={formData.endTime}
                     onChange={e => setFormData({...formData, endTime: e.target.value})}
                   />
@@ -249,22 +249,22 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Giấy mời (Liên kết ngoài)</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Giấy mời (Liên kết ngoài)</label>
                 <input 
                   type="url" 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all text-gray-900 dark:text-white"
                   placeholder="https://example.com/invitation.pdf"
                   value={formData.invitationLink}
                   onChange={e => setFormData({...formData, invitationLink: e.target.value})}
                 />
-                <p className="text-[10px] text-gray-400 font-medium italic">Dán liên kết đến file giấy mời hoặc thông báo họp nếu có.</p>
+                <p className="text-[10px] text-gray-400 dark:text-slate-500 font-medium italic">Dán liên kết đến file giấy mời hoặc thông báo họp nếu có.</p>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Thành phần khác</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Thành phần khác</label>
                 <input 
                   type="text" 
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-all text-gray-900 dark:text-white"
                   placeholder="Gợi ý: Ban Giám đốc, Toàn thể CBNV..."
                   value={formData.participants}
                   onChange={e => setFormData({...formData, participants: e.target.value})}
@@ -272,10 +272,10 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-gray-700">Nội dung thảo luận</label>
+                <label className="text-sm font-bold text-gray-700 dark:text-slate-300">Nội dung thảo luận</label>
                 <textarea 
                   rows={4}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none resize-none transition-all"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-700 focus:outline-none resize-none transition-all text-gray-900 dark:text-white"
                   placeholder="Mô tả tóm tắt chương trình họp..."
                   value={formData.description}
                   onChange={e => setFormData({...formData, description: e.target.value})}
@@ -284,37 +284,37 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
             </div>
 
             <div className="lg:col-span-5 flex flex-col space-y-6">
-              <div className="flex justify-between items-center border-l-4 border-blue-600 pl-3">
-                <h4 className="text-xs font-black text-blue-600 uppercase tracking-[0.2em]">Cấu hình Điểm cầu</h4>
-                <div className="px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-black">
+              <div className="flex justify-between items-center border-l-4 border-blue-600 dark:border-blue-400 pl-3">
+                <h4 className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em]">Cấu hình Điểm cầu</h4>
+                <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-black">
                   ĐÃ CHỌN: {selectedEndpointIds.length}
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col bg-gray-50 rounded-3xl border border-gray-100 p-4 space-y-4 shadow-inner min-h-[300px]">
+              <div className="flex-1 flex flex-col bg-gray-50 dark:bg-slate-800/50 rounded-3xl border border-gray-100 dark:border-slate-800 p-4 space-y-4 shadow-inner min-h-[300px]">
                 <div className="relative">
                   <input 
                     type="text"
                     placeholder="Tìm kiếm điểm cầu..."
-                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-shadow text-gray-900 dark:text-white"
                     value={endpointSearch}
                     onChange={e => setEndpointSearch(e.target.value)}
                   />
-                  <svg className="w-4 h-4 absolute left-3.5 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                  <svg className="w-4 h-4 absolute left-3.5 top-3 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </div>
 
                 <div className="flex justify-between px-2">
                   <button 
                     type="button"
                     onClick={() => setSelectedEndpointIds(availableEndpoints.map(e => e.id))}
-                    className="text-[10px] font-black text-blue-600 uppercase tracking-wider hover:text-blue-800"
+                    className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider hover:text-blue-800 dark:hover:text-blue-300"
                   >
                     Chọn tất cả
                   </button>
                   <button 
                     type="button"
                     onClick={() => setSelectedEndpointIds([])}
-                    className="text-[10px] font-black text-gray-400 uppercase tracking-wider hover:text-gray-600"
+                    className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-wider hover:text-gray-600 dark:hover:text-slate-300"
                   >
                     Bỏ chọn
                   </button>
@@ -326,12 +326,12 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
                       key={ep.id} 
                       className={`flex items-center p-3.5 cursor-pointer rounded-2xl border transition-all ${
                         selectedEndpointIds.includes(ep.id) 
-                          ? 'bg-white border-blue-500 shadow-md translate-x-1' 
-                          : 'bg-white/50 border-gray-100 hover:border-blue-200'
+                          ? 'bg-white dark:bg-slate-800 border-blue-500 dark:border-blue-400 shadow-md translate-x-1' 
+                          : 'bg-white/50 dark:bg-slate-900/50 border-gray-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-blue-900/50'
                       }`}
                     >
                       <div className={`relative flex items-center justify-center w-5 h-5 rounded-md border-2 transition-colors shrink-0 ${
-                        selectedEndpointIds.includes(ep.id) ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
+                        selectedEndpointIds.includes(ep.id) ? 'bg-blue-600 border-blue-600 dark:bg-blue-500 dark:border-blue-500' : 'bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600'
                       }`}>
                         <input 
                           type="checkbox" 
@@ -345,10 +345,10 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
                       </div>
                       <div className="ml-4 flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <span className={`text-sm font-bold truncate ${selectedEndpointIds.includes(ep.id) ? 'text-blue-700' : 'text-gray-800'}`}>{ep.name}</span>
+                          <span className={`text-sm font-bold truncate ${selectedEndpointIds.includes(ep.id) ? 'text-blue-700 dark:text-blue-300' : 'text-gray-800 dark:text-slate-200'}`}>{ep.name}</span>
                           <span className={`w-2 h-2 rounded-full shrink-0 ${ep.status === EndpointStatus.CONNECTED ? 'bg-green-500' : 'bg-red-500'}`}></span>
                         </div>
-                        <p className="text-[10px] text-gray-500 font-medium mt-0.5 truncate">{ep.location}</p>
+                        <p className="text-[10px] text-gray-500 dark:text-slate-400 font-medium mt-0.5 truncate uppercase tracking-widest">{ep.location}</p>
                       </div>
                     </label>
                   ))}
@@ -357,18 +357,18 @@ const CreateMeetingModal: React.FC<CreateMeetingModalProps> = ({
             </div>
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-4 shrink-0">
+          <div className="mt-12 pt-8 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row justify-end gap-4 shrink-0">
             <button 
               type="button"
               onClick={onClose}
-              className="px-8 py-3.5 border border-gray-200 text-gray-600 rounded-2xl text-sm font-black hover:bg-gray-50 transition-all active:scale-95 w-full sm:w-auto"
+              className="px-8 py-3.5 border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300 rounded-2xl text-sm font-black hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-95 w-full sm:w-auto"
             >
               HỦY BỎ
             </button>
             <button 
               type="submit"
               className={`px-12 py-3.5 text-white rounded-2xl text-sm font-black shadow-xl transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 w-full sm:w-auto ${
-                editingMeeting ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200'
+                editingMeeting ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200 dark:shadow-none' : 'bg-blue-600 hover:bg-blue-700 shadow-blue-200 dark:shadow-none'
               }`}
             >
               <span>{editingMeeting ? 'CẬP NHẬT' : 'PHÁT HÀNH'}</span>
