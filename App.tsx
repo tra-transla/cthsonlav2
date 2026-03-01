@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { 
   LayoutDashboard, CalendarDays, MonitorPlay, FileText, Settings, Users, Share2, LogOut, Menu, X, Activity, BarChart3, Building2, User as UserIcon, Clock, Zap, Target, ShieldEllipsis, Bell, Video,
+  ChevronLeft, ChevronRight,
   Sun, Moon
 } from 'lucide-react';
 import { Meeting, Endpoint, EndpointStatus, Unit, Staff, ParticipantGroup, User, SystemSettings } from './types';
@@ -33,6 +34,7 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'meetings' | 'monitoring' | 'management' | 'accounts' | 'reports' | 'deployment'>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' || 
@@ -395,39 +397,74 @@ const App: React.FC = () => {
         <div className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />
       )}
 
-      <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col shadow-2xl flex-shrink-0 z-30 transform transition-transform duration-300 ease-in-out lg:translate-x-0 border-r border-gray-100 dark:border-slate-800 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 min-w-0">
+      <aside className={`fixed lg:static inset-y-0 left-0 ${isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'} w-64 bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex flex-col shadow-2xl flex-shrink-0 z-30 transform transition-all duration-300 ease-in-out lg:translate-x-0 border-r border-gray-100 dark:border-slate-800 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className={`p-6 flex ${isSidebarCollapsed ? 'flex-col items-center' : 'justify-between items-center'}`}>
+          <div className={`flex items-center gap-3 min-w-0 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
              <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
                 {systemSettings.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
              </div>
-             <div className="flex flex-col min-w-0">
-                <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings.shortName}</span>
-                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser.fullName || 'User'}</span>
-             </div>
+             {!isSidebarCollapsed && (
+               <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-black uppercase tracking-tight truncate">{systemSettings.shortName}</span>
+                  <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase mt-0.5 truncate tracking-tighter">Cán bộ: {currentUser.fullName || 'User'}</span>
+               </div>
+             )}
           </div>
-          <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white"><X size={20} /></button>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} 
+              className="hidden lg:flex p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition-all"
+              title={isSidebarCollapsed ? "Mở rộng menu" : "Thu gọn menu"}
+            >
+              {isSidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+            </button>
+            <button onClick={toggleSidebar} className="lg:hidden text-slate-400 hover:text-slate-600 dark:hover:text-white"><X size={20} /></button>
+          </div>
         </div>
  
-        <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar">
-          <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'dashboard' ? primaryBgStyle : {}}><LayoutDashboard size={20} /> <span className="font-bold text-sm">Tổng quan</span></button>
-          <button onClick={() => handleTabChange('reports')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'reports' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'reports' ? primaryBgStyle : {}}><FileText size={20} /> <span className="font-bold text-sm">Báo cáo</span></button>
-          <button onClick={() => handleTabChange('meetings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'meetings' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'meetings' ? primaryBgStyle : {}}><CalendarDays size={20} /> <span className="font-bold text-sm">Lịch họp</span></button>
+        <nav className={`flex-1 px-4 space-y-1 mt-4 overflow-y-auto custom-scrollbar ${isSidebarCollapsed ? 'flex flex-col items-center' : ''}`}>
+          <button onClick={() => handleTabChange('dashboard')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'dashboard' ? primaryBgStyle : {}} title="Tổng quan">
+            <LayoutDashboard size={20} /> 
+            {!isSidebarCollapsed && <span className="font-bold text-sm">Tổng quan</span>}
+          </button>
+          <button onClick={() => handleTabChange('reports')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'reports' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'reports' ? primaryBgStyle : {}} title="Báo cáo">
+            <FileText size={20} /> 
+            {!isSidebarCollapsed && <span className="font-bold text-sm">Báo cáo</span>}
+          </button>
+          <button onClick={() => handleTabChange('meetings')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'meetings' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'meetings' ? primaryBgStyle : {}} title="Lịch họp">
+            <CalendarDays size={20} /> 
+            {!isSidebarCollapsed && <span className="font-bold text-sm">Lịch họp</span>}
+          </button>
           {isAdmin && (
-            <button onClick={() => handleTabChange('monitoring')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'monitoring' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'monitoring' ? primaryBgStyle : {}}><MonitorPlay size={20} /> <span className="font-bold text-sm">Giám sát</span></button>
+            <button onClick={() => handleTabChange('monitoring')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'monitoring' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'monitoring' ? primaryBgStyle : {}} title="Giám sát">
+              <MonitorPlay size={20} /> 
+              {!isSidebarCollapsed && <span className="font-bold text-sm">Giám sát</span>}
+            </button>
           )}
           {isAdmin && (
-            <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-1">
-               <p className="px-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Hệ thống</p>
-               <button onClick={() => handleTabChange('management')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'management' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'management' ? primaryBgStyle : {}}><Settings size={20} /> <span className="font-bold text-sm">Danh mục</span></button>
-               <button onClick={() => handleTabChange('accounts')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'accounts' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'accounts' ? primaryBgStyle : {}}><Users size={20} /> <span className="font-bold text-sm">Tài khoản</span></button>
-               <button onClick={() => handleTabChange('deployment')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'deployment' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'}`} style={activeTab === 'deployment' ? primaryBgStyle : {}}><Share2 size={20} /> <span className="font-bold text-sm">Triển khai</span></button>
+            <div className={`pt-4 border-t border-gray-100 dark:border-slate-800 space-y-1 ${isSidebarCollapsed ? 'w-full flex flex-col items-center' : ''}`}>
+               {!isSidebarCollapsed && <p className="px-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Hệ thống</p>}
+               <button onClick={() => handleTabChange('management')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'management' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'management' ? primaryBgStyle : {}} title="Danh mục">
+                 <Settings size={20} /> 
+                 {!isSidebarCollapsed && <span className="font-bold text-sm">Danh mục</span>}
+               </button>
+               <button onClick={() => handleTabChange('accounts')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'accounts' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'accounts' ? primaryBgStyle : {}} title="Tài khoản">
+                 <Users size={20} /> 
+                 {!isSidebarCollapsed && <span className="font-bold text-sm">Tài khoản</span>}
+               </button>
+               <button onClick={() => handleTabChange('deployment')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'deployment' ? 'text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800'} ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} style={activeTab === 'deployment' ? primaryBgStyle : {}} title="Triển khai">
+                 <Share2 size={20} /> 
+                 {!isSidebarCollapsed && <span className="font-bold text-sm">Triển khai</span>}
+               </button>
             </div>
           )}
         </nav>
  
-        <div className="p-6 border-t border-gray-100 dark:border-slate-800">
-           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 dark:text-red-400 hover:bg-red-500/10 transition-all font-bold text-sm"><LogOut size={18} /> Đăng xuất</button>
+        <div className={`p-6 border-t border-gray-100 dark:border-slate-800 ${isSidebarCollapsed ? 'flex justify-center px-0' : ''}`}>
+           <button onClick={handleLogout} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 dark:text-red-400 hover:bg-red-500/10 transition-all font-bold text-sm ${isSidebarCollapsed ? 'justify-center px-0' : ''}`} title="Đăng xuất">
+             <LogOut size={18} /> 
+             {!isSidebarCollapsed && <span>Đăng xuất</span>}
+           </button>
         </div>
       </aside>
 
