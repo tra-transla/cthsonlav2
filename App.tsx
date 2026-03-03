@@ -401,7 +401,12 @@ const App: React.FC = () => {
         <div className={`p-6 flex ${isSidebarCollapsed ? 'flex-col items-center' : 'justify-between items-center'}`}>
           <div className={`flex items-center gap-3 min-w-0 ${isSidebarCollapsed ? 'flex-col' : ''}`}>
              <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
-                {systemSettings.logoBase64 ? <img src={systemSettings.logoBase64} alt="Logo" className="max-w-full max-h-full" /> : <Video size={20} style={primaryTextStyle} />}
+                <img 
+                  src="https://i.postimg.cc/NFKqCphP/logo-CTHSLA.png" 
+                  alt="Logo" 
+                  className="w-[35px] h-[35px] object-contain" 
+                  referrerPolicy="no-referrer"
+                />
              </div>
              {!isSidebarCollapsed && (
                <div className="flex flex-col min-w-0">

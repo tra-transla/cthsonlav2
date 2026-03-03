@@ -126,13 +126,14 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
           <div className="shrink-0">
             <div className="relative inline-flex mb-4">
                <div className="absolute -inset-4 bg-blue-500/20 rounded-full blur-2xl"></div>
-               <div className="relative p-4 bg-white dark:bg-white/10 backdrop-blur-xl border border-gray-200 dark:border-white/20 rounded-[1.5rem] shadow-2xl flex items-center justify-center w-16 h-16 overflow-hidden">
-                  {systemSettings.logoBase64 ? (
-                    <img src={systemSettings.logoBase64} alt="System Logo" className="max-w-full max-h-full object-contain" />
-                  ) : (
-                    <Video className="w-10 h-10 text-blue-400" strokeWidth={1.5} />
-                  )}
-               </div>
+               <div className="w-10 h-10 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                <img 
+                  src="https://i.postimg.cc/NFKqCphP/logo-CTHSLA.png" 
+                  alt="Logo" 
+                  className="w-[35px] h-[35px] object-contain" 
+                  referrerPolicy="no-referrer"
+                />
+             </div>
             </div>
             <h1 className="flex flex-col items-start text-left space-y-1">
               <span className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-tight">
