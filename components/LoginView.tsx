@@ -114,7 +114,7 @@ const LoginView: React.FC<LoginViewProps> = ({ users, meetings, onLoginSuccess, 
       {/* Background Image - Modern & Smooth */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-transform duration-[30000ms] scale-110 animate-slow-zoom"
-        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000")' }}
+        style={{ backgroundImage: 'url("https://69a6ae9f581800b707fba36a.imgix.net/QTTB.png")' }}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-slate-100/40 to-white/90 dark:from-slate-950/95 dark:via-slate-900/80 dark:to-slate-950/90 transition-colors duration-500"></div>
       </div>
